@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 
 export type UserProfile = {
   id: number;
@@ -17,62 +18,85 @@ type AuthContextType = {
   loading: boolean;
   activeUsername: string;
   hasPermission: (perm: string) => boolean;
-  switchUser: (username: string) => Promise<void>;
-  availableUsers: { username: string; label: string; role: string }[];
+  login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const PRESET_USERS = [
-  { username: 'admin', label: 'System Admin (Full Access)', role: 'Administrator' },
-  { username: 'officer', label: 'Jane Officer (Field Officer)', role: 'Field Officer' },
-  { username: 'finance', label: 'Bob Finance (Finance Officer)', role: 'Finance Officer' },
-  { username: 'viewer', label: 'Alice Viewer (Read-only)', role: 'Viewer' },
-];
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [activeUsername, setActiveUsername] = useState<string>('admin');
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const router = useRouter();
 
-  const fetchCurrentUser = async (username: string) => {
+  const fetchCurrentUser = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch('/api/auth/me', {
-        headers: { 'X-User': username },
+        method: 'GET',
+        credentials: 'include',
       });
       if (res.ok) {
         const data = await res.json();
         setUser(data);
       } else {
-        console.error('Failed to fetch user', res.status);
+        setUser(null);
       }
     } catch (e) {
-      console.error('Network error fetching auth', e);
+      console.error('Network error fetching auth session', e);
+      setUser(null);
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    // Check saved username in localStorage if available
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('fund_user') : null;
-    const initial = saved || 'admin';
-    setActiveUsername(initial);
-    fetchCurrentUser(initial);
   }, []);
 
-  const switchUser = async (username: string) => {
-    setActiveUsername(username);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('fund_user', username);
+  useEffect(() => {
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
+
+  const login = async (username: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setLoading(false);
+        return { success: false, error: err.detail || 'Invalid username or password' };
+      }
+
+      const data = await res.json();
+      setUser(data.user);
+      setLoading(false);
+      return { success: true };
+    } catch (e: any) {
+      setLoading(false);
+      return { success: false, error: e.message || 'Login network error' };
     }
-    await fetchCurrentUser(username);
+  };
+
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (e) {
+      console.error('Error during logout', e);
+    } finally {
+      setUser(null);
+      window.location.href = '/login';
+    }
   };
 
   const refreshUser = async () => {
-    await fetchCurrentUser(activeUsername);
+    await fetchCurrentUser();
   };
 
   const hasPermission = (perm: string): boolean => {
@@ -85,10 +109,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         loading,
-        activeUsername,
+        activeUsername: user?.username || '',
         hasPermission,
-        switchUser,
-        availableUsers: PRESET_USERS,
+        login,
+        logout,
         refreshUser,
       }}
     >

@@ -37,6 +37,15 @@ class UserOut(BaseModel):
     class Config:
         from_attributes = True
 
+class LoginRequest(BaseModel):
+    username: str = Field(..., min_length=1, max_length=100)
+    password: str = Field(..., min_length=1, max_length=128)
+
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserOut
+
 # Group schemas
 class GroupCreate(BaseModel):
     name: str = Field(..., min_length=2, max_length=150)
@@ -186,3 +195,63 @@ class BeneficiaryLedgerSummary(BaseModel):
     current_balance: Decimal
     entries: List[BeneficiaryLedgerEntryOut]
     total_count: int
+
+# Donation schemas
+class DonationCreate(BaseModel):
+    donation_date: date
+    donor_name: str = Field(..., min_length=1, max_length=150)
+    amount: Decimal = Field(..., gt=0, decimal_places=2)
+    payment_method: str = Field(..., min_length=1, max_length=50)
+    transaction_reference: Optional[str] = Field(None, max_length=100)
+    notes: Optional[str] = None
+
+class DonationUpdate(BaseModel):
+    donation_date: Optional[date] = None
+    donor_name: Optional[str] = Field(None, min_length=1, max_length=150)
+    amount: Optional[Decimal] = Field(None, gt=0, decimal_places=2)
+    payment_method: Optional[str] = Field(None, min_length=1, max_length=50)
+    transaction_reference: Optional[str] = Field(None, max_length=100)
+    notes: Optional[str] = None
+
+class DonationCancelRequest(BaseModel):
+    cancel_reason: str = Field(..., min_length=1, max_length=500)
+
+class DonationOut(BaseModel):
+    id: int
+    donation_id: str
+    donation_date: date
+    donor_name: str
+    amount: Decimal
+    payment_method: str
+    transaction_reference: Optional[str] = None
+    notes: Optional[str] = None
+    recorded_by_id: int
+    recorded_by_name: Optional[str] = None
+    status: str
+    cancelled_at: Optional[datetime] = None
+    cancelled_by_id: Optional[int] = None
+    cancelled_by_name: Optional[str] = None
+    cancel_reason: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class DonationPaymentMethodSummary(BaseModel):
+    payment_method: str
+    total_amount: Decimal
+    transaction_count: int
+
+class DonationPeriodicSummary(BaseModel):
+    period: str
+    total_amount: Decimal
+    transaction_count: int
+
+class DonationReportSummary(BaseModel):
+    total_amount: Decimal
+    total_transactions: int
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    by_payment_method: List[DonationPaymentMethodSummary] = []
+    periodic_summary: List[DonationPeriodicSummary] = []

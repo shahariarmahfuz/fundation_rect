@@ -172,23 +172,23 @@ export default function ManageGroupsPage() {
       </div>
 
       {/* Filters & Search */}
-      <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs flex flex-col sm:flex-row items-center gap-3">
-        <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground" />
+      <div className="p-3.5 sm:p-4 rounded-xl bg-card border border-border/60 shadow-xs flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3 w-full min-w-0">
+        <div className="relative w-full sm:flex-1 min-w-0">
+          <Search className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground shrink-0" />
           <input
             type="text"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             placeholder="Search by group name or code (e.g. G-0001)..."
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground min-w-0"
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:items-center">
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="px-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+            className="w-full sm:w-auto px-2.5 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground truncate min-w-0"
           >
             <option value="">All Statuses</option>
             <option value="Active">Active</option>
@@ -198,7 +198,7 @@ export default function ManageGroupsPage() {
           <select
             value={limit}
             onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-            className="px-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+            className="w-full sm:w-auto px-2.5 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground truncate min-w-0"
           >
             <option value={10}>10 / page</option>
             <option value={25}>25 / page</option>
@@ -209,25 +209,25 @@ export default function ManageGroupsPage() {
 
       {/* Error state */}
       {error && (
-        <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 flex items-center gap-2 text-xs text-destructive">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-destructive/10 border border-destructive/30 flex items-center gap-2 text-xs text-destructive w-full min-w-0">
           <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{error}</span>
+          <span className="break-words">{error}</span>
         </div>
       )}
 
       {/* Groups Table */}
-      <div className="rounded-xl bg-card border border-border/60 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+      <div className="rounded-xl bg-card border border-border/60 shadow-xs overflow-hidden w-full max-w-full min-w-0">
+        <div className="overflow-x-auto w-full max-w-full">
+          <table className="w-full text-left border-collapse text-xs min-w-[560px]">
             <thead>
               <tr className="border-b border-border/60 bg-black/[0.02] dark:bg-white/[0.02] text-muted-foreground font-semibold">
-                <th className="py-3 px-4">Group Code</th>
-                <th className="py-3 px-4">Group Name</th>
-                <th className="py-3 px-4 hidden md:table-cell">Description</th>
-                <th className="py-3 px-4">Members</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 hidden sm:table-cell">Created Date</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-3 sm:px-4">Group Code</th>
+                <th className="py-3 px-3 sm:px-4">Group Name</th>
+                <th className="py-3 px-3 sm:px-4 hidden md:table-cell">Description</th>
+                <th className="py-3 px-3 sm:px-4">Members</th>
+                <th className="py-3 px-3 sm:px-4">Status</th>
+                <th className="py-3 px-3 sm:px-4 hidden sm:table-cell">Created Date</th>
+                <th className="py-3 px-3 sm:px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
@@ -312,12 +312,12 @@ export default function ManageGroupsPage() {
         </div>
 
         {/* Pagination Bar */}
-        <div className="py-3 px-4 border-t border-border/50 bg-black/[0.01] dark:bg-white/[0.01] flex items-center justify-between text-xs text-muted-foreground">
-          <span>
+        <div className="py-3 px-3 sm:px-4 border-t border-border/50 bg-black/[0.01] dark:bg-white/[0.01] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground w-full">
+          <span className="text-center sm:text-left">
             Showing {groups.length > 0 ? (page - 1) * limit + 1 : 0} to{' '}
             {Math.min(page * limit, total)} of {total} groups
           </span>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               disabled={page <= 1}
               onClick={() => setPage(page - 1)}
@@ -341,8 +341,8 @@ export default function ManageGroupsPage() {
 
       {/* Edit Group Modal */}
       {isEditing && selectedGroup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="relative w-full max-w-md bg-card border border-border/60 rounded-xl shadow-2xl p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-3 sm:p-4 animate-in fade-in overflow-y-auto">
+          <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-card border border-border/60 rounded-xl shadow-2xl p-4 sm:p-6 space-y-4 my-auto">
             <div className="flex items-center justify-between border-b border-border/50 pb-3">
               <div>
                 <h3 className="text-sm font-bold text-foreground">Edit Group: {selectedGroup.code}</h3>

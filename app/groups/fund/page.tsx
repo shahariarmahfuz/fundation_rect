@@ -138,7 +138,7 @@ export default function GroupFundPage() {
   const netBalanceSystem = totalReceivedSystem - totalSpentSystem;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -150,40 +150,40 @@ export default function GroupFundPage() {
       </div>
 
       {/* Financial Integrity Banner */}
-      <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-3">
+      <div className="p-3.5 sm:p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5 sm:gap-3 w-full min-w-0">
         <Receipt className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
-        <div>
+        <div className="min-w-0 break-words">
           <span className="font-semibold">Financial Integrity Guarantee:</span> Balances are strictly calculated from actual persisted transactions. No hard-coded, estimated, or fabricated financial numbers are used. If no transactions exist for a group, a zero balance is displayed with an explicit empty state.
         </div>
       </div>
 
       {/* High-level Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-5 rounded-xl bg-card border border-border/60 shadow-xs">
-          <span className="text-xs text-muted-foreground font-medium uppercase">Total Received</span>
-          <div className="flex items-center gap-2 mt-2">
-            <ArrowUpRight className="w-5 h-5 text-emerald-500" />
-            <span className="text-2xl font-bold text-foreground font-mono">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full min-w-0">
+        <div className="p-4 sm:p-5 rounded-xl bg-card border border-border/60 shadow-xs min-w-0">
+          <span className="text-xs text-muted-foreground font-medium uppercase truncate block">Total Received</span>
+          <div className="flex items-center gap-2 mt-2 min-w-0">
+            <ArrowUpRight className="w-5 h-5 text-emerald-500 shrink-0" />
+            <span className="text-xl sm:text-2xl font-bold text-foreground font-mono truncate">
               ${totalReceivedSystem.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
         </div>
 
-        <div className="p-5 rounded-xl bg-card border border-border/60 shadow-xs">
-          <span className="text-xs text-muted-foreground font-medium uppercase">Total Disbursed / Spent</span>
-          <div className="flex items-center gap-2 mt-2">
-            <ArrowDownRight className="w-5 h-5 text-rose-500" />
-            <span className="text-2xl font-bold text-foreground font-mono">
+        <div className="p-4 sm:p-5 rounded-xl bg-card border border-border/60 shadow-xs min-w-0">
+          <span className="text-xs text-muted-foreground font-medium uppercase truncate block">Total Disbursed / Spent</span>
+          <div className="flex items-center gap-2 mt-2 min-w-0">
+            <ArrowDownRight className="w-5 h-5 text-rose-500 shrink-0" />
+            <span className="text-xl sm:text-2xl font-bold text-foreground font-mono truncate">
               ${totalSpentSystem.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
         </div>
 
-        <div className="p-5 rounded-xl bg-card border border-border/60 shadow-xs">
-          <span className="text-xs text-muted-foreground font-medium uppercase">Net Available Balance</span>
-          <div className="flex items-center gap-2 mt-2">
-            <Wallet className="w-5 h-5 text-primary" />
-            <span className="text-2xl font-bold text-foreground font-mono">
+        <div className="p-4 sm:p-5 rounded-xl bg-card border border-border/60 shadow-xs min-w-0">
+          <span className="text-xs text-muted-foreground font-medium uppercase truncate block">Net Available Balance</span>
+          <div className="flex items-center gap-2 mt-2 min-w-0">
+            <Wallet className="w-5 h-5 text-primary shrink-0" />
+            <span className="text-xl sm:text-2xl font-bold text-foreground font-mono truncate">
               ${netBalanceSystem.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
@@ -191,25 +191,25 @@ export default function GroupFundPage() {
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-destructive/10 text-xs text-destructive flex items-center gap-2">
-          <AlertCircle className="w-4 h-4" />
-          <span>{error}</span>
+        <div className="p-3.5 sm:p-4 rounded-xl bg-destructive/10 text-xs text-destructive flex items-center gap-2 w-full min-w-0">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span className="break-words">{error}</span>
         </div>
       )}
 
       {/* Group Funds Table */}
-      <div className="rounded-xl bg-card border border-border/60 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+      <div className="rounded-xl bg-card border border-border/60 shadow-xs overflow-hidden w-full max-w-full min-w-0">
+        <div className="overflow-x-auto w-full max-w-full">
+          <table className="w-full text-left border-collapse text-xs min-w-[580px]">
             <thead>
               <tr className="border-b border-border/60 bg-black/[0.02] dark:bg-white/[0.02] text-muted-foreground font-semibold">
-                <th className="py-3 px-4">Group Code</th>
-                <th className="py-3 px-4">Group Name</th>
-                <th className="py-3 px-4 text-right">Total Funds Received</th>
-                <th className="py-3 px-4 text-right">Total Funds Spent</th>
-                <th className="py-3 px-4 text-right">Available Balance</th>
-                <th className="py-3 px-4 text-center">Transactions</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-3 sm:px-4">Group Code</th>
+                <th className="py-3 px-3 sm:px-4">Group Name</th>
+                <th className="py-3 px-3 sm:px-4 text-right">Total Received</th>
+                <th className="py-3 px-3 sm:px-4 text-right">Total Spent</th>
+                <th className="py-3 px-3 sm:px-4 text-right">Available Balance</th>
+                <th className="py-3 px-3 sm:px-4 text-center">Transactions</th>
+                <th className="py-3 px-3 sm:px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
@@ -269,13 +269,13 @@ export default function GroupFundPage() {
 
       {/* Group Fund Ledger Modal */}
       {selectedGroup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="relative w-full max-w-3xl bg-card border border-border/60 rounded-xl shadow-2xl p-6 space-y-4 max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-3 sm:p-4 animate-in fade-in overflow-y-auto">
+          <div className="relative w-full max-w-3xl bg-card border border-border/60 rounded-xl shadow-2xl p-4 sm:p-6 space-y-4 max-h-[90vh] flex flex-col my-auto min-w-0">
             <div className="flex items-center justify-between border-b border-border/50 pb-3">
-              <div>
-                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <span>Fund Ledger: {selectedGroup.name}</span>
-                  <span className="font-mono text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
+              <div className="min-w-0 pr-2">
+                <h3 className="text-sm font-bold text-foreground flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="truncate">Fund Ledger: {selectedGroup.name}</span>
+                  <span className="font-mono text-xs px-2 py-0.5 rounded bg-primary/10 text-primary shrink-0">
                     {selectedGroup.code}
                   </span>
                 </h3>
@@ -285,27 +285,27 @@ export default function GroupFundPage() {
               </div>
               <button
                 onClick={() => setSelectedGroup(null)}
-                className="p-1 rounded text-muted-foreground hover:text-foreground"
+                className="p-1 rounded text-muted-foreground hover:text-foreground shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Date Filters & Add Transaction */}
-            <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 text-xs w-full min-w-0">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="px-2.5 py-1.5 rounded-md bg-background border border-border/70 text-xs"
+                  className="px-2.5 py-1.5 rounded-md bg-background border border-border/70 text-xs w-[125px] sm:w-auto"
                 />
-                <span className="text-muted-foreground">to</span>
+                <span className="text-muted-foreground text-xs">to</span>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="px-2.5 py-1.5 rounded-md bg-background border border-border/70 text-xs"
+                  className="px-2.5 py-1.5 rounded-md bg-background border border-border/70 text-xs w-[125px] sm:w-auto"
                 />
                 <button
                   onClick={() => fetchLedger(selectedGroup.id, 1)}
@@ -317,7 +317,7 @@ export default function GroupFundPage() {
 
               <button
                 onClick={() => setShowAddTx(!showAddTx)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:opacity-90"
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 w-full sm:w-auto shrink-0"
               >
                 <PlusCircle className="w-3.5 h-3.5" /> Record Transaction
               </button>
@@ -325,13 +325,13 @@ export default function GroupFundPage() {
 
             {/* Add Transaction Inline Form */}
             {showAddTx && (
-              <form onSubmit={handleCreateTransaction} className="p-3.5 rounded-lg bg-black/[0.02] dark:bg-white/[0.02] border border-border/60 space-y-3">
+              <form onSubmit={handleCreateTransaction} className="p-3 sm:p-3.5 rounded-lg bg-black/[0.02] dark:bg-white/[0.02] border border-border/60 space-y-3 w-full min-w-0">
                 <div className="text-xs font-semibold text-foreground">Post New Verified Ledger Transaction</div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <select
                     value={txType}
                     onChange={(e) => setTxType(e.target.value)}
-                    className="px-2 py-1.5 rounded bg-background border border-border/70 text-xs text-foreground"
+                    className="px-2 py-1.5 rounded bg-background border border-border/70 text-xs text-foreground w-full"
                   >
                     <option value="Received">Received (Credit)</option>
                     <option value="Spent">Spent (Debit)</option>
@@ -343,14 +343,14 @@ export default function GroupFundPage() {
                     placeholder="Amount (USD)"
                     value={txAmount}
                     onChange={(e) => setTxAmount(e.target.value)}
-                    className="px-2 py-1.5 rounded bg-background border border-border/70 text-xs text-foreground font-mono"
+                    className="px-2 py-1.5 rounded bg-background border border-border/70 text-xs text-foreground font-mono w-full"
                   />
                   <input
                     type="text"
                     placeholder="Description / Purpose"
                     value={txDesc}
                     onChange={(e) => setTxDesc(e.target.value)}
-                    className="px-2 py-1.5 rounded bg-background border border-border/70 text-xs text-foreground"
+                    className="px-2 py-1.5 rounded bg-background border border-border/70 text-xs text-foreground w-full"
                   />
                 </div>
                 <div className="flex justify-end gap-2">
@@ -373,8 +373,8 @@ export default function GroupFundPage() {
             )}
 
             {/* Ledger Transactions Table */}
-            <div className="flex-1 overflow-y-auto rounded-lg border border-border/60">
-              <table className="w-full text-left text-xs border-collapse">
+            <div className="flex-1 overflow-y-auto overflow-x-auto rounded-lg border border-border/60 w-full max-w-full min-w-0">
+              <table className="w-full text-left text-xs border-collapse min-w-[500px]">
                 <thead>
                   <tr className="border-b border-border/60 bg-black/[0.02] dark:bg-white/[0.02] text-muted-foreground font-semibold">
                     <th className="py-2.5 px-3">Date</th>
@@ -436,15 +436,15 @@ export default function GroupFundPage() {
 
             {/* Modal Footer with Summary */}
             {ledgerData && (
-              <div className="pt-3 border-t border-border/50 flex flex-wrap items-center justify-between text-xs">
-                <div className="flex gap-4">
+              <div className="pt-3 border-t border-border/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs w-full">
+                <div className="flex flex-wrap gap-2.5 sm:gap-4">
                   <span>Received: <strong className="font-mono text-emerald-600">${Number(ledgerData.summary.total_received).toFixed(2)}</strong></span>
                   <span>Spent: <strong className="font-mono text-rose-600">${Number(ledgerData.summary.total_spent).toFixed(2)}</strong></span>
                   <span>Balance: <strong className="font-mono text-foreground">${Number(ledgerData.summary.available_balance).toFixed(2)}</strong></span>
                 </div>
                 <button
                   onClick={() => setSelectedGroup(null)}
-                  className="px-3 py-1.5 rounded-md bg-secondary text-foreground text-xs font-medium"
+                  className="px-3 py-1.5 rounded-md bg-secondary text-foreground text-xs font-medium w-full sm:w-auto text-center"
                 >
                   Close
                 </button>

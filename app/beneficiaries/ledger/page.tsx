@@ -148,9 +148,9 @@ export default function BeneficiaryLedgerPage() {
   const totalPages = Math.ceil(totalCount / limit) || 1;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
       {/* Page Title & Register Shortcut */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">Beneficiary Financial Ledger</h1>
           <p className="text-xs text-muted-foreground">
@@ -160,7 +160,7 @@ export default function BeneficiaryLedgerPage() {
         {hasPermission('beneficiaries.create') && (
           <Link
             href="/beneficiaries/add"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 shadow-xs"
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 shadow-xs shrink-0"
           >
             + Add Beneficiary
           </Link>
@@ -168,32 +168,32 @@ export default function BeneficiaryLedgerPage() {
       </div>
 
       {/* Beneficiary Selector Card */}
-      <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-        <div className="flex-1 relative">
+      <div className="p-3.5 sm:p-4 rounded-xl bg-card border border-border/60 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4 w-full min-w-0">
+        <div className="flex-1 relative min-w-0">
           <label className="block text-[11px] font-semibold text-muted-foreground uppercase mb-1">
             Selected Beneficiary
           </label>
           <div
             onClick={() => setIsSelectorOpen(!isSelectorOpen)}
-            className="w-full px-3 py-2 text-xs rounded-lg bg-background border border-border/70 cursor-pointer flex items-center justify-between hover:border-primary/50"
+            className="w-full px-3 py-2 text-xs rounded-lg bg-background border border-border/70 cursor-pointer flex items-center justify-between hover:border-primary/50 min-w-0"
           >
             {selectedBeneficiaryObj ? (
-              <div className="flex items-center gap-2">
-                <span className="font-mono font-bold text-primary">{selectedBeneficiaryObj.beneficiary_id}</span>
-                <span className="font-medium text-foreground">{selectedBeneficiaryObj.name}</span>
-                <span className="px-1.5 py-0.2 rounded text-[10px] bg-secondary text-secondary-foreground">
+              <div className="flex items-center gap-2 min-w-0 truncate">
+                <span className="font-mono font-bold text-primary shrink-0">{selectedBeneficiaryObj.beneficiary_id}</span>
+                <span className="font-medium text-foreground truncate">{selectedBeneficiaryObj.name}</span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] bg-secondary text-secondary-foreground shrink-0">
                   {selectedBeneficiaryObj.status}
                 </span>
               </div>
             ) : (
               <span className="text-muted-foreground">Select a registered beneficiary...</span>
             )}
-            <Search className="w-4 h-4 text-muted-foreground" />
+            <Search className="w-4 h-4 text-muted-foreground shrink-0 ml-2" />
           </div>
 
           {/* Search Dropdown */}
           {isSelectorOpen && (
-            <div className="absolute top-[105%] left-0 w-full bg-card border border-border/60 rounded-xl shadow-xl z-50 p-2 space-y-2 animate-in fade-in">
+            <div className="absolute top-[105%] left-0 w-full max-w-full bg-card border border-border/60 rounded-xl shadow-xl z-50 p-2 space-y-2 animate-in fade-in">
               <input
                 type="text"
                 autoFocus
@@ -221,11 +221,11 @@ export default function BeneficiaryLedgerPage() {
                         selectedBeneficiaryId === b.id ? 'bg-primary/10 text-primary font-medium' : 'text-foreground'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-semibold">{b.beneficiary_id}</span>
-                        <span>{b.name}</span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="font-mono font-semibold shrink-0">{b.beneficiary_id}</span>
+                        <span className="truncate">{b.name}</span>
                       </div>
-                      <span className="text-[10px] text-muted-foreground">{b.status}</span>
+                      <span className="text-[10px] text-muted-foreground shrink-0 ml-2">{b.status}</span>
                     </div>
                   ))
                 )}
@@ -235,10 +235,10 @@ export default function BeneficiaryLedgerPage() {
         </div>
 
         {selectedBeneficiaryId && (
-          <div className="flex items-center gap-2 self-end md:self-center">
+          <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
             <button
               onClick={() => setShowAddTx(!showAddTx)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 shadow-xs"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 shadow-xs w-full md:w-auto"
             >
               <PlusCircle className="w-4 h-4" /> Post Ledger Entry
             </button>
@@ -248,14 +248,14 @@ export default function BeneficiaryLedgerPage() {
 
       {/* Record Transaction Form */}
       {showAddTx && (
-        <form onSubmit={handleCreateTransaction} className="p-4 rounded-xl bg-card border border-primary/30 shadow-md space-y-3 animate-in fade-in">
+        <form onSubmit={handleCreateTransaction} className="p-3.5 sm:p-4 rounded-xl bg-card border border-primary/30 shadow-md space-y-3 animate-in fade-in w-full min-w-0">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-foreground">Post Verified Transaction for {selectedBeneficiaryObj?.name}</span>
-            <button type="button" onClick={() => setShowAddTx(false)} className="text-muted-foreground hover:text-foreground">
+            <span className="text-xs font-bold text-foreground truncate">Post Verified Transaction for {selectedBeneficiaryObj?.name}</span>
+            <button type="button" onClick={() => setShowAddTx(false)} className="text-muted-foreground hover:text-foreground shrink-0 p-1">
               <X className="w-4 h-4" />
             </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
             <div>
               <label className="block text-[10px] font-semibold text-muted-foreground uppercase mb-1">Transaction Type</label>
               <select
@@ -311,32 +311,32 @@ export default function BeneficiaryLedgerPage() {
 
       {/* Summary Cards */}
       {ledgerSummary && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-5 rounded-xl bg-card border border-border/60 shadow-xs">
-            <span className="text-xs text-muted-foreground font-medium uppercase">Total Received</span>
-            <div className="flex items-center gap-2 mt-2">
-              <ArrowUpRight className="w-5 h-5 text-emerald-500" />
-              <span className="text-2xl font-bold text-foreground font-mono">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full min-w-0">
+          <div className="p-4 sm:p-5 rounded-xl bg-card border border-border/60 shadow-xs min-w-0">
+            <span className="text-xs text-muted-foreground font-medium uppercase truncate block">Total Received</span>
+            <div className="flex items-center gap-2 mt-2 min-w-0">
+              <ArrowUpRight className="w-5 h-5 text-emerald-500 shrink-0" />
+              <span className="text-xl sm:text-2xl font-bold text-foreground font-mono truncate">
                 ${Number(ledgerSummary.total_received).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
           </div>
 
-          <div className="p-5 rounded-xl bg-card border border-border/60 shadow-xs">
-            <span className="text-xs text-muted-foreground font-medium uppercase">Total Disbursed</span>
-            <div className="flex items-center gap-2 mt-2">
-              <ArrowDownRight className="w-5 h-5 text-rose-500" />
-              <span className="text-2xl font-bold text-foreground font-mono">
+          <div className="p-4 sm:p-5 rounded-xl bg-card border border-border/60 shadow-xs min-w-0">
+            <span className="text-xs text-muted-foreground font-medium uppercase truncate block">Total Disbursed</span>
+            <div className="flex items-center gap-2 mt-2 min-w-0">
+              <ArrowDownRight className="w-5 h-5 text-rose-500 shrink-0" />
+              <span className="text-xl sm:text-2xl font-bold text-foreground font-mono truncate">
                 ${Number(ledgerSummary.total_disbursed).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
           </div>
 
-          <div className="p-5 rounded-xl bg-card border border-border/60 shadow-xs">
-            <span className="text-xs text-muted-foreground font-medium uppercase">Current Balance</span>
-            <div className="flex items-center gap-2 mt-2">
-              <Wallet className="w-5 h-5 text-primary" />
-              <span className="text-2xl font-bold text-foreground font-mono">
+          <div className="p-4 sm:p-5 rounded-xl bg-card border border-border/60 shadow-xs min-w-0">
+            <span className="text-xs text-muted-foreground font-medium uppercase truncate block">Current Balance</span>
+            <div className="flex items-center gap-2 mt-2 min-w-0">
+              <Wallet className="w-5 h-5 text-primary shrink-0" />
+              <span className="text-xl sm:text-2xl font-bold text-foreground font-mono truncate">
                 ${Number(ledgerSummary.current_balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
@@ -345,61 +345,62 @@ export default function BeneficiaryLedgerPage() {
       )}
 
       {/* Ledger Table & Filters */}
-      <div className="rounded-xl bg-card border border-border/60 shadow-xs overflow-hidden space-y-0">
+      <div className="rounded-xl bg-card border border-border/60 shadow-xs overflow-hidden space-y-0 w-full max-w-full min-w-0">
         {/* Filter bar */}
-        <div className="p-3.5 border-b border-border/50 bg-black/[0.01] dark:bg-white/[0.01] flex flex-wrap items-center gap-2.5 text-xs">
+        <div className="p-3 sm:p-3.5 border-b border-border/50 bg-black/[0.01] dark:bg-white/[0.01] flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 text-xs w-full min-w-0">
           <input
             type="text"
             placeholder="Filter description or reference..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="px-2.5 py-1.5 rounded-md bg-background border border-border/60 text-xs min-w-[200px]"
+            className="px-2.5 py-1.5 rounded-md bg-background border border-border/60 text-xs w-full sm:w-auto sm:flex-1 min-w-0"
           />
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-2.5 py-1.5 rounded-md bg-background border border-border/60 text-xs"
-          >
-            <option value="">All Types</option>
-            <option value="Received">Received</option>
-            <option value="Disbursed">Disbursed</option>
-          </select>
-          <div className="flex items-center gap-1.5">
-            <span className="text-muted-foreground text-[11px]">From:</span>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="px-2 py-1 rounded bg-background border border-border/60 text-xs"
-            />
-            <span className="text-muted-foreground text-[11px]">To:</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="px-2 py-1 rounded bg-background border border-border/60 text-xs"
-            />
-            <button
-              onClick={() => selectedBeneficiaryId && fetchLedger(selectedBeneficiaryId, 1)}
-              className="px-2.5 py-1 rounded bg-secondary text-foreground text-xs font-medium hover:bg-secondary/80"
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="px-2.5 py-1.5 rounded-md bg-background border border-border/60 text-xs flex-1 sm:flex-initial"
             >
-              Apply
-            </button>
+              <option value="">All Types</option>
+              <option value="Received">Received</option>
+              <option value="Disbursed">Disbursed</option>
+            </select>
+            <div className="flex items-center gap-1.5">
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="px-2 py-1 rounded bg-background border border-border/60 text-xs w-[125px] sm:w-auto"
+              />
+              <span className="text-muted-foreground text-xs">to</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="px-2 py-1 rounded bg-background border border-border/60 text-xs w-[125px] sm:w-auto"
+              />
+              <button
+                onClick={() => selectedBeneficiaryId && fetchLedger(selectedBeneficiaryId, 1)}
+                className="px-2.5 py-1 rounded bg-secondary text-foreground text-xs font-medium hover:bg-secondary/80"
+              >
+                Apply
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Transactions Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+        <div className="overflow-x-auto w-full max-w-full">
+          <table className="w-full text-left border-collapse text-xs min-w-[650px]">
             <thead>
               <tr className="border-b border-border/60 bg-black/[0.02] dark:bg-white/[0.02] text-muted-foreground font-semibold">
-                <th className="py-3 px-4">Date</th>
-                <th className="py-3 px-4">Transaction Reference</th>
-                <th className="py-3 px-4">Description</th>
-                <th className="py-3 px-4">Transaction Type</th>
-                <th className="py-3 px-4 text-right">Amount Received</th>
-                <th className="py-3 px-4 text-right">Amount Disbursed</th>
-                <th className="py-3 px-4 text-right font-mono">Running Balance</th>
+                <th className="py-3 px-3 sm:px-4">Date</th>
+                <th className="py-3 px-3 sm:px-4">Transaction Reference</th>
+                <th className="py-3 px-3 sm:px-4">Description</th>
+                <th className="py-3 px-3 sm:px-4">Transaction Type</th>
+                <th className="py-3 px-3 sm:px-4 text-right">Amount Received</th>
+                <th className="py-3 px-3 sm:px-4 text-right">Amount Disbursed</th>
+                <th className="py-3 px-3 sm:px-4 text-right font-mono">Running Balance</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
@@ -458,11 +459,11 @@ export default function BeneficiaryLedgerPage() {
         </div>
 
         {/* Pagination */}
-        <div className="py-3 px-4 border-t border-border/50 bg-black/[0.01] dark:bg-white/[0.01] flex items-center justify-between text-xs text-muted-foreground">
+        <div className="py-3 px-3 sm:px-4 border-t border-border/50 bg-black/[0.01] dark:bg-white/[0.01] flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs text-muted-foreground w-full">
           <span>
             Total Transactions: {totalCount}
           </span>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               disabled={page <= 1}
               onClick={() => setPage(page - 1)}

@@ -92,7 +92,7 @@ export default function MemberDueListPage() {
   const totalPages = Math.ceil(total / limit) || 1;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
       {/* Title */}
       <div>
         <h1 className="text-xl font-bold tracking-tight text-foreground">Member Due List</h1>
@@ -102,13 +102,13 @@ export default function MemberDueListPage() {
       </div>
 
       {/* Financial Integrity & Architectural Banner */}
-      <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-900 dark:text-blue-200 flex items-start gap-3">
+      <div className="p-3.5 sm:p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-900 dark:text-blue-200 flex items-start gap-2.5 sm:gap-3 w-full min-w-0">
         <Info className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
-        <div className="space-y-1">
+        <div className="space-y-1 min-w-0">
           <span className="font-semibold text-blue-950 dark:text-blue-100">
             Dues Ledger Architecture Notice
           </span>
-          <p className="text-blue-800 dark:text-blue-300">
+          <p className="text-blue-800 dark:text-blue-300 break-words">
             In compliance with accounting standards, member due amounts are never assumed or fabricated from sample numbers.
             Because the foundation's automated contribution collection and dues ledger module has not yet been deployed,
             due amounts remain pending formal ledger integration.
@@ -117,61 +117,63 @@ export default function MemberDueListPage() {
       </div>
 
       {/* Search & Group Filter */}
-      <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[220px]">
-          <Search className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground" />
+      <div className="p-3.5 sm:p-4 rounded-xl bg-card border border-border/60 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full min-w-0">
+        <div className="relative w-full sm:flex-1 min-w-0">
+          <Search className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground shrink-0" />
           <input
             type="text"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             placeholder="Search by Member ID or Name..."
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground min-w-0"
           />
         </div>
 
-        <select
-          value={groupFilter}
-          onChange={(e) => { setGroupFilter(e.target.value); setPage(1); }}
-          className="px-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
-        >
-          <option value="">All Groups</option>
-          {activeGroups.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.name} ({g.code})
-            </option>
-          ))}
-        </select>
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+          <select
+            value={groupFilter}
+            onChange={(e) => { setGroupFilter(e.target.value); setPage(1); }}
+            className="w-full sm:w-auto px-2.5 sm:px-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground truncate min-w-0"
+          >
+            <option value="">All Groups</option>
+            {activeGroups.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name} ({g.code})
+              </option>
+            ))}
+          </select>
 
-        <select
-          value={limit}
-          onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-          className="px-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
-        >
-          <option value={10}>10 / page</option>
-          <option value={25}>25 / page</option>
-          <option value={50}>50 / page</option>
-        </select>
+          <select
+            value={limit}
+            onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
+            className="w-full sm:w-auto px-2.5 sm:px-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground truncate min-w-0"
+          >
+            <option value={10}>10 / page</option>
+            <option value={25}>25 / page</option>
+            <option value={50}>50 / page</option>
+          </select>
+        </div>
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-destructive/10 text-xs text-destructive flex items-center gap-2">
-          <AlertCircle className="w-4 h-4" />
-          <span>{error}</span>
+        <div className="p-3.5 sm:p-4 rounded-xl bg-destructive/10 text-xs text-destructive flex items-center gap-2 w-full min-w-0">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span className="break-words">{error}</span>
         </div>
       )}
 
       {/* Due List Table */}
-      <div className="rounded-xl bg-card border border-border/60 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+      <div className="rounded-xl bg-card border border-border/60 shadow-xs overflow-hidden w-full max-w-full min-w-0">
+        <div className="overflow-x-auto w-full max-w-full">
+          <table className="w-full text-left border-collapse text-xs min-w-[540px]">
             <thead>
               <tr className="border-b border-border/60 bg-black/[0.02] dark:bg-white/[0.02] text-muted-foreground font-semibold">
-                <th className="py-3 px-4">Member ID</th>
-                <th className="py-3 px-4">Member Name</th>
-                <th className="py-3 px-4">Group Name</th>
-                <th className="py-3 px-4">Group Code</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Outstanding Due Amount</th>
+                <th className="py-3 px-3 sm:px-4">Member ID</th>
+                <th className="py-3 px-3 sm:px-4">Member Name</th>
+                <th className="py-3 px-3 sm:px-4">Group Name</th>
+                <th className="py-3 px-3 sm:px-4">Group Code</th>
+                <th className="py-3 px-3 sm:px-4">Status</th>
+                <th className="py-3 px-3 sm:px-4 text-right">Outstanding Due Amount</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
@@ -234,12 +236,12 @@ export default function MemberDueListPage() {
         </div>
 
         {/* Pagination Bar */}
-        <div className="py-3 px-4 border-t border-border/50 bg-black/[0.01] dark:bg-white/[0.01] flex items-center justify-between text-xs text-muted-foreground">
-          <span>
+        <div className="py-3 px-3 sm:px-4 border-t border-border/50 bg-black/[0.01] dark:bg-white/[0.01] flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs text-muted-foreground w-full">
+          <span className="text-center sm:text-left">
             Showing {items.length > 0 ? (page - 1) * limit + 1 : 0} to{' '}
             {Math.min(page * limit, total)} of {total} records
           </span>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               disabled={page <= 1}
               onClick={() => setPage(page - 1)}

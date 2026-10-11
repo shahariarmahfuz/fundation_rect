@@ -4,16 +4,23 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
-  Search, 
   LayoutDashboard, 
   FolderKanban, 
   Users, 
   UsersRound,
+  UserRoundPlus,
   HandHeart,
-  ShieldCheck,
+  HandCoins,
+  PlusCircle,
+  ReceiptText,
+  BarChart3,
+  ShieldCheck, 
   Settings, 
   LogOut,
   Hash,
+  Wallet,
+  ClipboardList,
+  BookOpenText,
   ChevronDown,
   ChevronRight,
   Inbox,
@@ -26,8 +33,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Command,
-  X,
-  CircleDot
+  X
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 
@@ -51,7 +57,6 @@ export type NavGroupData = {
 export const foundationNavGroups: NavGroupData[] = [
   {
     items: [
-      { id: 'search', title: 'Search', icon: Search, shortcut: '⌘K' },
       { id: 'home', title: 'Home', icon: LayoutDashboard, href: '/' },
     ]
   },
@@ -63,9 +68,9 @@ export const foundationNavGroups: NavGroupData[] = [
         title: 'Group',
         icon: Users,
         children: [
-          { id: 'group-add', title: 'Add Group', icon: Hash, href: '/groups/add', permission: 'groups.create' },
-          { id: 'group-manage', title: 'Manage Group', icon: Hash, href: '/groups/manage', permission: 'groups.view' },
-          { id: 'group-fund', title: 'Group Fund', icon: Hash, href: '/groups/fund', permission: 'group_funds.view' },
+          { id: 'group-add', title: 'Add Group', icon: UserRoundPlus, href: '/groups/add', permission: 'groups.create' },
+          { id: 'group-manage', title: 'Manage Group', icon: Users, href: '/groups/manage', permission: 'groups.view' },
+          { id: 'group-fund', title: 'Group Fund', icon: Wallet, href: '/groups/fund', permission: 'group_funds.view' },
         ]
       },
       {
@@ -73,9 +78,9 @@ export const foundationNavGroups: NavGroupData[] = [
         title: 'Member',
         icon: UsersRound,
         children: [
-          { id: 'member-add', title: 'Add Member', icon: Hash, href: '/members/add', permission: 'members.create' },
-          { id: 'member-manage', title: 'Manage Member', icon: Hash, href: '/members/manage', permission: 'members.view' },
-          { id: 'member-due-list', title: 'Member Due List', icon: Hash, href: '/members/due-list', permission: 'members.due_list.view' },
+          { id: 'member-add', title: 'Add Member', icon: UserRoundPlus, href: '/members/add', permission: 'members.create' },
+          { id: 'member-manage', title: 'Manage Member', icon: UsersRound, href: '/members/manage', permission: 'members.view' },
+          { id: 'member-due-list', title: 'Member Due List', icon: ClipboardList, href: '/members/due-list', permission: 'members.due_list.view' },
         ]
       },
       {
@@ -83,8 +88,19 @@ export const foundationNavGroups: NavGroupData[] = [
         title: 'Beneficiary',
         icon: HandHeart,
         children: [
-          { id: 'beneficiary-add', title: 'Add Beneficiary', icon: Hash, href: '/beneficiaries/add', permission: 'beneficiaries.create' },
-          { id: 'beneficiary-ledger', title: 'Beneficiary Ledger', icon: Hash, href: '/beneficiaries/ledger', permission: 'beneficiary_ledger.view' },
+          { id: 'beneficiary-add', title: 'Add Beneficiary', icon: UserRoundPlus, href: '/beneficiaries/add', permission: 'beneficiaries.create' },
+          { id: 'beneficiary-manage', title: 'Manage Beneficiary', icon: UsersRound, href: '/beneficiaries/manage', permission: 'beneficiaries.view' },
+          { id: 'beneficiary-ledger', title: 'Beneficiary Ledger', icon: BookOpenText, href: '/beneficiaries/ledger', permission: 'beneficiary_ledger.view' },
+        ]
+      },
+      {
+        id: 'donation-parent',
+        title: 'Donation',
+        icon: HandCoins,
+        children: [
+          { id: 'donation-add', title: 'Add Donation', icon: PlusCircle, href: '/donations/add', permission: 'donations.create' },
+          { id: 'donation-manage', title: 'Manage Donation', icon: ReceiptText, href: '/donations/manage', permission: 'donations.view' },
+          { id: 'donation-report', title: 'Donation Report', icon: BarChart3, href: '/donations/report', permission: 'donation_reports.view' },
         ]
       },
       {
@@ -103,54 +119,96 @@ export const mockBottomItems: NavItemData[] = [
   { id: 'logout', title: 'Log out', icon: LogOut },
 ];
 
-function WorkspaceSwitcher({ selected, onSelect }: { selected?: string, onSelect?: (ws: string) => void }) {
+export function UserProfileMenu({ selected, onSelect }: { selected?: string; onSelect?: (ws: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [internalSelected, setInternalSelected] = useState('Acme Corp');
-  
-  const current = selected || internalSelected;
-  const handleSelect = onSelect || setInternalSelected;
+  let authContext: any = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    authContext = useAuth();
+  } catch (e) {
+    // Auth context optional if rendered standalone
+  }
+
+  const user = authContext?.user;
+  const fullName = user?.full_name || selected || 'Foundation User';
+  const roleName = user?.role_name || 'Member';
+  const initial = (fullName.trim().charAt(0) || 'U').toUpperCase();
 
   return (
-    <div className="relative">
+    <div className="relative mb-3">
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between px-2 py-2 mb-4 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors select-none group"
+        className="flex items-center justify-between px-2 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors select-none group border border-transparent hover:border-border/40"
+        title={fullName}
       >
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-[6px] bg-primary text-primary-foreground flex items-center justify-center font-semibold text-[13px] shadow-sm">
-            {current.charAt(0)}
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-[6px] bg-primary text-primary-foreground flex items-center justify-center font-semibold text-[13px] shadow-xs shrink-0">
+            {initial}
           </div>
-          <div className="flex flex-col overflow-hidden">
-            <span className="text-[13px] font-medium leading-none mb-1 text-foreground truncate max-w-[120px]">{current}</span>
-            <span className="text-[11px] text-muted-foreground leading-none">Pro Plan</span>
+          <div className="flex flex-col min-w-0 overflow-hidden">
+            <span className="text-[13px] font-medium leading-none mb-1 text-foreground truncate max-w-[150px]">
+              {fullName}
+            </span>
+            <span className="text-[11px] text-muted-foreground leading-none truncate max-w-[150px]">
+              {roleName}
+            </span>
           </div>
         </div>
-        <ChevronDown className="w-4 h-4 text-muted-foreground/50 group-hover:text-foreground/70 transition-colors shrink-0" strokeWidth={1.5} />
+        <ChevronDown className="w-4 h-4 text-muted-foreground/50 group-hover:text-foreground/70 transition-colors shrink-0 ml-1" strokeWidth={1.5} />
       </div>
 
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-[52px] left-0 w-full bg-card border border-border/50 rounded-lg shadow-xl z-50 py-1 flex flex-col gap-0.5 animate-in fade-in zoom-in-95 duration-100">
-            {['Acme Corp', 'Personal Workspace', 'Client Sandbox'].map(ws => (
-              <div 
-                key={ws}
-                onClick={() => { handleSelect(ws); setIsOpen(false); }}
-                className={`px-3 py-2 mx-1 text-[13px] rounded-md cursor-pointer transition-colors ${current === ws ? 'bg-primary/10 text-primary font-medium' : 'text-foreground/80 hover:bg-black/5 dark:hover:bg-white/5'}`}
-              >
-                {ws}
+          <div className="absolute top-[48px] left-0 w-full bg-card border border-border/50 rounded-lg shadow-xl z-50 py-2 px-1 flex flex-col gap-1 animate-in fade-in zoom-in-95 duration-100">
+            <div className="px-2.5 py-1.5 flex flex-col">
+              <span className="text-[12px] font-semibold text-foreground truncate">{fullName}</span>
+              {user?.email && (
+                <span className="text-[11px] text-muted-foreground truncate">{user.email}</span>
+              )}
+              <div className="mt-1 flex items-center gap-1.5">
+                <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-medium truncate">
+                  {roleName}
+                </span>
+                {user?.username && (
+                  <span className="text-[10px] text-muted-foreground truncate font-mono">
+                    @{user.username}
+                  </span>
+                )}
               </div>
-            ))}
-            <div className="h-px bg-border/50 my-1 mx-2" />
-            <div className="px-3 py-2 mx-1 text-[13px] text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 rounded-md cursor-pointer flex items-center gap-2 transition-colors">
-              <span className="text-[16px] leading-none mb-0.5">+</span> Create Workspace
             </div>
+            {authContext?.hasPermission?.('roles.manage') && (
+              <>
+                <div className="h-px bg-border/50 my-1 mx-1" />
+                <Link
+                  href="/roles"
+                  onClick={() => setIsOpen(false)}
+                  className="px-2.5 py-1.5 text-[12px] text-foreground/80 hover:bg-black/5 dark:hover:bg-white/5 rounded-md cursor-pointer transition-colors flex items-center gap-2"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-muted-foreground" strokeWidth={1.5} />
+                  <span>Role Permissions</span>
+                </Link>
+              </>
+            )}
+            <div className="h-px bg-border/50 my-1 mx-1" />
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                authContext?.logout?.();
+              }}
+              className="w-full text-left px-2.5 py-1.5 text-[12px] text-destructive hover:bg-destructive/10 rounded-md cursor-pointer transition-colors flex items-center gap-2"
+            >
+              <LogOut className="w-3.5 h-3.5 text-destructive" strokeWidth={1.5} />
+              <span>Log out</span>
+            </button>
           </div>
         </>
       )}
     </div>
   );
 }
+
+export const WorkspaceSwitcher = UserProfileMenu;
 
 function NavItem({ 
   item, 
@@ -163,61 +221,77 @@ function NavItem({
   onSelect: (id: string, href?: string) => void;
   level?: number;
 }) {
-  const isActive = activeId === item.id || (item.href && activeId === item.href);
+  const pathname = usePathname();
+  const isActive = activeId === item.id || (item.href && (pathname === item.href || activeId === item.href));
   const hasChildren = !!(item.children && item.children.length > 0);
   const [isOpen, setIsOpen] = useState(true);
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
     if (hasChildren) {
+      e.preventDefault();
       setIsOpen(!isOpen);
     } else {
       onSelect(item.id, item.href);
     }
   };
 
+  const navContent = (
+    <div 
+      className={`group flex items-center justify-between px-2.5 py-[7px] rounded-[6px] cursor-pointer transition-all duration-200 select-none
+        ${isActive 
+          ? 'bg-black/5 dark:bg-white/10 text-foreground font-medium' 
+          : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground/90'
+        }
+      `}
+      style={{ paddingLeft: `${level * 12 + 10}px` }}
+      onClick={handleClick}
+    >
+      <div className="flex items-center gap-2.5 min-w-0">
+        <item.icon 
+          className={`w-[16px] h-[16px] shrink-0 transition-colors
+            ${isActive ? 'text-foreground' : 'text-muted-foreground/70 group-hover:text-foreground/70'}
+          `} 
+          strokeWidth={1.5} 
+        />
+        <span className="text-[13px] tracking-wide truncate">
+          {item.title}
+        </span>
+      </div>
+      
+      <div className="flex items-center gap-2 shrink-0">
+        {item.shortcut && (
+           <kbd className="hidden group-hover:inline-flex items-center justify-center h-5 px-1.5 text-[10px] font-medium font-mono text-muted-foreground/60 bg-background/50 border border-border/50 rounded-[4px] shadow-xs">
+             {item.shortcut}
+           </kbd>
+        )}
+        {item.badge && (
+          <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[10px] font-medium rounded-full bg-primary/10 text-primary">
+            {item.badge}
+          </span>
+        )}
+        {hasChildren && (
+          <ChevronRight 
+            className={`w-3.5 h-3.5 text-muted-foreground/50 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} 
+            strokeWidth={2}
+          />
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex flex-col w-full">
-      <div 
-        className={`group flex items-center justify-between px-2.5 py-[7px] rounded-[6px] cursor-pointer transition-all duration-200 select-none
-          ${isActive 
-            ? 'bg-black/5 dark:bg-white/10 text-foreground font-medium' 
-            : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground/90'
-          }
-        `}
-        style={{ paddingLeft: `${level * 12 + 10}px` }}
-        onClick={handleClick}
-      >
-        <div className="flex items-center gap-2.5 min-w-0">
-          <item.icon 
-            className={`w-[16px] h-[16px] shrink-0 transition-colors
-              ${isActive ? 'text-foreground' : 'text-muted-foreground/70 group-hover:text-foreground/70'}
-            `} 
-            strokeWidth={1.5} 
-          />
-          <span className="text-[13px] tracking-wide truncate">
-            {item.title}
-          </span>
-        </div>
-        
-        <div className="flex items-center gap-2 shrink-0">
-          {item.shortcut && (
-             <kbd className="hidden group-hover:inline-flex items-center justify-center h-5 px-1.5 text-[10px] font-medium font-mono text-muted-foreground/60 bg-background/50 border border-border/50 rounded-[4px] shadow-xs">
-               {item.shortcut}
-             </kbd>
-          )}
-          {item.badge && (
-            <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[10px] font-medium rounded-full bg-primary/10 text-primary">
-              {item.badge}
-            </span>
-          )}
-          {hasChildren && (
-            <ChevronRight 
-              className={`w-3.5 h-3.5 text-muted-foreground/50 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} 
-              strokeWidth={2}
-            />
-          )}
-        </div>
-      </div>
+      {item.href && !hasChildren ? (
+        <Link 
+          href={item.href} 
+          className="w-full block" 
+          onClick={() => onSelect(item.id, item.href)}
+        >
+          {navContent}
+        </Link>
+      ) : (
+        navContent
+      )}
 
       {hasChildren && (
         <div 
@@ -252,14 +326,16 @@ export function SidebarNav({
   onSelect,
   activeWorkspace,
   onWorkspaceSelect,
-  customNavGroups
+  customNavGroups,
+  onItemClick
 }: { 
   className?: string,
   activeId?: string,
   onSelect?: (id: string, href?: string) => void,
   activeWorkspace?: string,
   onWorkspaceSelect?: (ws: string) => void,
-  customNavGroups?: NavGroupData[]
+  customNavGroups?: NavGroupData[],
+  onItemClick?: () => void
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -275,20 +351,32 @@ export function SidebarNav({
   const currentId = activeId !== undefined ? activeId : (pathname || internalId);
 
   const handleSelect = (id: string, href?: string) => {
+    if (id === 'logout') {
+      if (authContext?.logout) {
+        authContext.logout();
+      }
+      return;
+    }
     if (onSelect) {
       onSelect(id, href);
     } else {
       setInternalId(id);
     }
-    if (href) {
-      router.push(href);
+    if (onItemClick) {
+      onItemClick();
     }
   };
 
   // Filter nav items by permissions
   const filterItem = (item: NavItemData): NavItemData | null => {
-    if (authContext && item.permission && !authContext.hasPermission(item.permission)) {
-      return null;
+    // Fail safe: if user or permission data is unavailable, do not display privileged navigation
+    if (item.permission) {
+      if (!authContext || !authContext.user || authContext.loading) {
+        return null;
+      }
+      if (!authContext.hasPermission(item.permission)) {
+        return null;
+      }
     }
     if (item.children) {
       const filteredChildren = item.children
@@ -309,8 +397,8 @@ export function SidebarNav({
   })).filter(group => group.items.length > 0);
 
   return (
-    <div className={`flex flex-col w-[260px] h-full bg-card/50 border-r border-border/50 p-3 font-sans ${className}`}>
-      <WorkspaceSwitcher selected={activeWorkspace} onSelect={onWorkspaceSelect} />
+    <div className={`flex flex-col w-full h-full bg-card/50 border-r border-border/50 p-3 font-sans max-w-full min-w-0 ${className}`}>
+      <UserProfileMenu selected={activeWorkspace} onSelect={onWorkspaceSelect} />
 
       <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col gap-4 mt-2">
         {filteredGroups.map((group, idx) => (
@@ -331,32 +419,6 @@ export function SidebarNav({
           </div>
         ))}
       </div>
-
-      {authContext && (
-        <div className="mt-2 p-2.5 rounded-lg bg-black/[0.03] dark:bg-white/[0.03] border border-border/40 text-[11px]">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="font-semibold text-foreground truncate">{authContext.user?.full_name || 'Loading...'}</span>
-            <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-medium truncate max-w-[90px]">
-              {authContext.user?.role_name || 'Role'}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5 text-muted-foreground mb-2">
-            <CircleDot className="w-2.5 h-2.5 text-emerald-500 fill-emerald-500 animate-pulse" />
-            <span className="truncate">RBAC Active: {authContext.user?.permissions?.length || 0} permissions</span>
-          </div>
-          <select 
-            value={authContext.activeUsername} 
-            onChange={(e) => authContext.switchUser(e.target.value)}
-            className="w-full bg-background border border-border/60 rounded px-2 py-1 text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-          >
-            {authContext.availableUsers.map((u: any) => (
-              <option key={u.username} value={u.username}>
-                Switch: {u.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
 
       <div className="mt-2 pt-3 border-t border-border/50 flex flex-col gap-0.5">
         {mockBottomItems.map(item => (
@@ -386,16 +448,11 @@ export default function SidebarNavPreview() {
   const [isOpen, setIsOpen] = useState(true);
   const [activeId, setActiveId] = useState('home');
   const [activeWorkspace, setActiveWorkspace] = useState('Foundation Corp');
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const activeItem = flatMockData.find(i => i.id === activeId || i.href === activeId);
   const activeTitle = activeItem ? activeItem.title : 'Dashboard';
 
   const handleSelect = (id: string) => {
-    if (id === 'search') {
-      setIsSearchOpen(true);
-      return;
-    }
     setActiveId(id);
   };
 
@@ -443,7 +500,7 @@ export default function SidebarNavPreview() {
              <div className="flex items-center justify-between mb-8">
                <div>
                  <h2 className="text-xl font-semibold text-foreground tracking-tight">Foundation Dashboard</h2>
-                 <p className="text-sm text-muted-foreground">Manage groups, registered members, beneficiaries, and funds.</p>
+                 <p className="text-sm text-muted-foreground">Manage groups, registered members, beneficiaries, donations, and funds.</p>
                </div>
              </div>
              
@@ -459,45 +516,13 @@ export default function SidebarNavPreview() {
                  <span className="text-xs text-muted-foreground mt-1">Auto M-XXXX generation</span>
                </div>
                <div className="p-5 bg-card rounded-xl border border-border/50 shadow-sm flex flex-col justify-between">
-                 <span className="text-xs font-medium text-muted-foreground uppercase">Beneficiaries</span>
-                 <span className="text-2xl font-bold text-foreground mt-2">Ledger</span>
-                 <span className="text-xs text-muted-foreground mt-1">Audit-ready running balance</span>
+                 <span className="text-xs font-medium text-muted-foreground uppercase">Donations</span>
+                 <span className="text-2xl font-bold text-foreground mt-2">Tracked</span>
+                 <span className="text-xs text-muted-foreground mt-1">Sequential D-XXXX records</span>
                </div>
              </div>
            </div>
         </div>
-
-        {isSearchOpen && (
-          <div className="absolute inset-0 z-50 flex items-start justify-center pt-[15vh] bg-background/40 backdrop-blur-sm px-4">
-            <div className="absolute inset-0" onClick={() => setIsSearchOpen(false)} />
-            <div className="relative w-full max-w-xl bg-card border border-border/50 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-              <div className="flex items-center px-4 border-b border-border/50">
-                <Search className="w-[18px] h-[18px] text-muted-foreground/70 mr-3 shrink-0" strokeWidth={1.5} />
-                <input 
-                  autoFocus
-                  className="flex-1 bg-transparent py-4 outline-none text-[14px] text-foreground placeholder:text-muted-foreground/50"
-                  placeholder="Search groups, members, beneficiaries..."
-                />
-                <kbd 
-                  onClick={() => setIsSearchOpen(false)}
-                  className="hidden sm:inline-flex items-center justify-center h-5 px-1.5 ml-2 text-[10px] font-medium font-mono text-muted-foreground/70 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/10 rounded-[4px] cursor-pointer hover:text-foreground hover:bg-black/10 dark:hover:bg-white/20 transition-colors"
-                >
-                  ESC
-                </kbd>
-                <button 
-                  onClick={() => setIsSearchOpen(false)}
-                  className="ml-3 p-1 rounded-md text-muted-foreground/70 hover:bg-black/5 dark:hover:bg-white/10 hover:text-foreground transition-colors"
-                >
-                  <X className="w-[18px] h-[18px]" strokeWidth={1.5} />
-                </button>
-              </div>
-              <div className="p-2 py-8 flex flex-col items-center justify-center">
-                 <Command className="w-6 h-6 text-muted-foreground/30 mb-2" strokeWidth={1.5} />
-                 <p className="text-[13px] text-muted-foreground font-medium">Type to search across Foundation modules...</p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

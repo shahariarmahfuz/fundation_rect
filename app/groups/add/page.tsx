@@ -84,38 +84,38 @@ export default function AddGroupPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="w-full max-w-2xl mx-auto space-y-4 sm:space-y-6 min-w-0">
       <div className="flex items-center gap-3">
         <Link
           href="/groups/manage"
-          className="p-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors"
+          className="p-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors shrink-0"
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Add New Group</h1>
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold tracking-tight text-foreground truncate">Add New Group</h1>
           <p className="text-xs text-muted-foreground">Register a new foundation community group in PostgreSQL.</p>
         </div>
       </div>
 
       {successData && (
-        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-2.5 sm:gap-3 w-full min-w-0">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
-          <div className="flex-1 text-xs">
+          <div className="flex-1 text-xs min-w-0">
             <span className="font-semibold text-emerald-800 dark:text-emerald-300">Group Created Successfully!</span>
-            <p className="text-emerald-700 dark:text-emerald-400 mt-0.5">
+            <p className="text-emerald-700 dark:text-emerald-400 mt-0.5 break-words">
               Group <strong>{successData.name}</strong> was registered with code <strong>{successData.code}</strong>.
             </p>
-            <div className="mt-2.5 flex gap-2">
+            <div className="mt-2.5 flex flex-wrap gap-2">
               <button
                 onClick={() => router.push('/groups/manage')}
-                className="px-3 py-1 rounded bg-emerald-600 text-white font-medium hover:bg-emerald-700 text-xs"
+                className="px-3 py-1.5 rounded bg-emerald-600 text-white font-medium hover:bg-emerald-700 text-xs"
               >
                 Go to Manage Groups
               </button>
               <button
                 onClick={() => setSuccessData(null)}
-                className="px-3 py-1 rounded border border-emerald-600/40 text-emerald-800 dark:text-emerald-300 text-xs hover:bg-emerald-500/10"
+                className="px-3 py-1.5 rounded border border-emerald-600/40 text-emerald-800 dark:text-emerald-300 text-xs hover:bg-emerald-500/10"
               >
                 Create Another
               </button>
@@ -125,15 +125,15 @@ export default function AddGroupPage() {
       )}
 
       {error && (
-        <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 flex items-start gap-3">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-destructive/10 border border-destructive/30 flex items-start gap-2.5 sm:gap-3 w-full min-w-0">
           <AlertCircle className="w-5 h-5 text-destructive mt-0.5 shrink-0" />
-          <div className="text-xs text-destructive font-medium">
+          <div className="text-xs text-destructive font-medium min-w-0 break-words">
             {error}
           </div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="p-6 rounded-xl bg-card border border-border/60 shadow-xs space-y-5">
+      <form onSubmit={handleSubmit} className="p-4 sm:p-6 rounded-xl bg-card border border-border/60 shadow-xs space-y-4 sm:space-y-5 w-full min-w-0">
         {/* Group Name */}
         <div>
           <label className="block text-xs font-semibold text-foreground mb-1.5">
@@ -151,7 +151,7 @@ export default function AddGroupPage() {
 
         {/* Group Code Strategy */}
         <div className="p-3.5 rounded-lg bg-black/[0.02] dark:bg-white/[0.02] border border-border/50 space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-primary" />
               <span className="text-xs font-semibold text-foreground">Group Code Generation</span>
@@ -202,7 +202,7 @@ export default function AddGroupPage() {
         </div>
 
         {/* Status */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label className="block text-xs font-semibold text-foreground mb-1.5">
               Initial Status
@@ -231,18 +231,18 @@ export default function AddGroupPage() {
         </div>
 
         {/* Submit */}
-        <div className="pt-3 border-t border-border/50 flex items-center justify-end gap-3">
+        <div className="pt-3 border-t border-border/50 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3">
           <button
             type="button"
             onClick={() => router.push('/groups/manage')}
-            className="px-4 py-2 text-xs font-medium rounded-lg border border-border/70 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            className="px-4 py-2 text-xs font-medium rounded-lg border border-border/70 hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-center"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 text-xs font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="px-4 py-2 text-xs font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 text-center"
           >
             {loading ? 'Creating Group in PostgreSQL...' : 'Create Group'}
           </button>

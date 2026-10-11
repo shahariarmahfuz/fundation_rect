@@ -127,8 +127,8 @@ export default function RoleManagementPage() {
   }, {});
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">Role & Permission Management</h1>
           <p className="text-xs text-muted-foreground">
@@ -138,33 +138,33 @@ export default function RoleManagementPage() {
         <button
           onClick={handleSavePermissions}
           disabled={saving}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 disabled:opacity-50 shadow-xs"
+          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 disabled:opacity-50 shadow-xs w-full sm:w-auto shrink-0"
         >
           {saving ? 'Updating Permissions...' : 'Save Role Permissions'}
         </button>
       </div>
 
       {saveSuccess && (
-        <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+        <div className="p-3 sm:p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 w-full min-w-0">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>Role permissions updated successfully in PostgreSQL! Changes are active immediately.</span>
+          <span className="break-words">Role permissions updated successfully in PostgreSQL! Changes are active immediately.</span>
         </div>
       )}
 
       {error && (
-        <div className="p-3 rounded-lg bg-destructive/10 text-xs text-destructive flex items-center gap-2">
+        <div className="p-3 sm:p-3.5 rounded-lg bg-destructive/10 text-xs text-destructive flex items-center gap-2 w-full min-w-0">
           <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{error}</span>
+          <span className="break-words">{error}</span>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6 w-full min-w-0">
         {/* Roles List */}
-        <div className="space-y-2">
+        <div className="space-y-2 min-w-0">
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-2">
             System Roles
           </span>
-          <div className="space-y-1.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-1.5 sm:gap-2">
             {roles.map((r) => (
               <div
                 key={r.id}
@@ -175,9 +175,9 @@ export default function RoleManagementPage() {
                     : 'bg-card border-border/60 hover:bg-black/5 dark:hover:bg-white/5 text-foreground'
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span>{r.name}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 font-mono">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="truncate">{r.name}</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 font-mono shrink-0">
                     {r.permissions.length} perms
                   </span>
                 </div>
@@ -190,7 +190,7 @@ export default function RoleManagementPage() {
         </div>
 
         {/* Permissions Matrix */}
-        <div className="md:col-span-3 rounded-xl bg-card border border-border/60 shadow-xs p-6 space-y-6">
+        <div className="md:col-span-3 rounded-xl bg-card border border-border/60 shadow-xs p-4 sm:p-6 space-y-4 sm:space-y-6 min-w-0">
           <div>
             <h2 className="text-sm font-bold text-foreground">
               Configuring Permissions for: <span className="text-primary">{selectedRole?.name}</span>
@@ -200,19 +200,19 @@ export default function RoleManagementPage() {
             </p>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {Object.keys(permsByModule).map((module) => (
               <div key={module} className="space-y-2.5">
                 <span className="text-xs font-semibold text-foreground uppercase tracking-wider block border-b border-border/50 pb-1">
                   {module.toUpperCase()} MODULE
                 </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
                   {permsByModule[module].map((p: any) => {
                     const isChecked = assignedPerms.includes(p.code);
                     return (
                       <label
                         key={p.code}
-                        className={`flex items-start gap-2.5 p-3 rounded-lg border text-xs cursor-pointer transition-colors ${
+                        className={`flex items-start gap-2.5 p-2.5 sm:p-3 rounded-lg border text-xs cursor-pointer transition-colors ${
                           isChecked
                             ? 'bg-primary/5 border-primary/40 text-foreground'
                             : 'bg-background border-border/60 text-muted-foreground hover:border-border'
@@ -222,13 +222,13 @@ export default function RoleManagementPage() {
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => handleTogglePerm(p.code)}
-                          className="mt-0.5 rounded border-border text-primary focus:ring-primary"
+                          className="mt-0.5 rounded border-border text-primary focus:ring-primary shrink-0"
                         />
                         <div className="flex-1 min-w-0">
                           <code className="text-[11px] font-mono font-semibold block text-primary truncate">
                             {p.code}
                           </code>
-                          <span className="text-[11px] text-muted-foreground leading-tight block mt-0.5">
+                          <span className="text-[11px] text-muted-foreground leading-tight block mt-0.5 break-words">
                             {p.description}
                           </span>
                         </div>

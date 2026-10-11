@@ -19,6 +19,7 @@ from backend.app.database import Base
 group_code_seq = Sequence("group_code_seq", start=1)
 member_id_seq = Sequence("member_id_seq", start=1)
 beneficiary_id_seq = Sequence("beneficiary_id_seq", start=1)
+donation_id_seq = Sequence("donation_id_seq", start=1)
 
 # Association table for Role <-> Permission
 role_permissions = Table(
@@ -55,6 +56,7 @@ class User(Base):
     username = Column(String(50), unique=True, nullable=False, index=True)
     email = Column(String(120), unique=True, nullable=False, index=True)
     full_name = Column(String(120), nullable=False)
+    password_hash = Column(String(255), nullable=True)
     role_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -138,3 +140,25 @@ class BeneficiaryLedger(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     beneficiary = relationship("Beneficiary", back_populates="ledger_entries")
+
+class Donation(Base):
+    __tablename__ = "donations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    donation_id = Column(String(50), unique=True, nullable=False, index=True)  # Format: "D-0001"
+    donation_date = Column(Date, nullable=False, index=True)
+    donor_name = Column(String(150), nullable=False, index=True)
+    amount = Column(Numeric(12, 2), nullable=False)
+    payment_method = Column(String(50), nullable=False, index=True)
+    transaction_reference = Column(String(100), unique=True, nullable=True, index=True)
+    notes = Column(Text, nullable=True)
+    recorded_by_id = Column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False, index=True)
+    status = Column(String(20), default="COMPLETED", nullable=False, index=True)  # "COMPLETED" or "CANCELLED"
+    cancelled_at = Column(DateTime(timezone=True), nullable=True)
+    cancelled_by_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    cancel_reason = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    recorded_by = relationship("User", foreign_keys=[recorded_by_id])
+    cancelled_by = relationship("User", foreign_keys=[cancelled_by_id])

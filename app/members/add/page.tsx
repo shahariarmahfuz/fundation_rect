@@ -129,16 +129,16 @@ export default function AddMemberPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="w-full max-w-2xl mx-auto space-y-4 sm:space-y-6 min-w-0">
       <div className="flex items-center gap-3">
         <Link
           href="/members/manage"
-          className="p-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors"
+          className="p-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors shrink-0"
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Add New Member</h1>
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold tracking-tight text-foreground truncate">Add New Member</h1>
           <p className="text-xs text-muted-foreground">
             Register a foundation member with automated sequential Member ID assignment.
           </p>
@@ -146,28 +146,28 @@ export default function AddMemberPage() {
       </div>
 
       {createdMember && (
-        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-2.5 sm:gap-3 w-full min-w-0">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
-          <div className="flex-1 text-xs">
+          <div className="flex-1 text-xs min-w-0">
             <span className="font-semibold text-emerald-800 dark:text-emerald-300">
               Member Registered Successfully!
             </span>
-            <p className="text-emerald-700 dark:text-emerald-400 mt-1">
+            <p className="text-emerald-700 dark:text-emerald-400 mt-1 break-words">
               Assigned Member ID: <strong className="font-mono text-sm px-1.5 py-0.5 rounded bg-emerald-500/20">{createdMember.member_id}</strong>
             </p>
-            <p className="text-emerald-700 dark:text-emerald-400 mt-0.5">
+            <p className="text-emerald-700 dark:text-emerald-400 mt-0.5 break-words">
               Name: <strong>{createdMember.name}</strong> | Group: <strong>{createdMember.group_name} ({createdMember.group_code})</strong>
             </p>
-            <div className="mt-3 flex gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               <button
                 onClick={() => router.push('/members/manage')}
-                className="px-3 py-1 rounded bg-emerald-600 text-white font-medium hover:bg-emerald-700 text-xs"
+                className="px-3 py-1.5 rounded bg-emerald-600 text-white font-medium hover:bg-emerald-700 text-xs"
               >
                 Go to Manage Members
               </button>
               <button
                 onClick={() => setCreatedMember(null)}
-                className="px-3 py-1 rounded border border-emerald-600/40 text-emerald-800 dark:text-emerald-300 text-xs hover:bg-emerald-500/10"
+                className="px-3 py-1.5 rounded border border-emerald-600/40 text-emerald-800 dark:text-emerald-300 text-xs hover:bg-emerald-500/10"
               >
                 Register Another Member
               </button>
@@ -177,15 +177,15 @@ export default function AddMemberPage() {
       )}
 
       {error && (
-        <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 flex items-start gap-3 text-xs text-destructive">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-destructive/10 border border-destructive/30 flex items-start gap-2.5 sm:gap-3 text-xs text-destructive w-full min-w-0">
           <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-          <div>{error}</div>
+          <div className="min-w-0 break-words">{error}</div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="p-6 rounded-xl bg-card border border-border/60 shadow-xs space-y-5">
+      <form onSubmit={handleSubmit} className="p-4 sm:p-6 rounded-xl bg-card border border-border/60 shadow-xs space-y-4 sm:space-y-5 w-full min-w-0">
         {/* Notice on Member ID */}
-        <div className="p-3 rounded-lg bg-black/[0.02] dark:bg-white/[0.02] border border-border/50 text-[11px] text-muted-foreground flex items-center justify-between">
+        <div className="p-3 rounded-lg bg-black/[0.02] dark:bg-white/[0.02] border border-border/50 text-[11px] text-muted-foreground flex flex-wrap items-center justify-between gap-1.5">
           <span>Automatic Member ID Allocation:</span>
           <span className="font-mono font-semibold text-foreground bg-primary/10 text-primary px-2 py-0.5 rounded">
             Auto Generated (M-XXXX)
@@ -356,18 +356,18 @@ export default function AddMemberPage() {
         </div>
 
         {/* Actions */}
-        <div className="pt-3 border-t border-border/50 flex items-center justify-end gap-3">
+        <div className="pt-3 border-t border-border/50 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3">
           <button
             type="button"
             onClick={() => router.push('/members/manage')}
-            className="px-4 py-2 text-xs font-medium rounded-lg border border-border/70 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            className="px-4 py-2 text-xs font-medium rounded-lg border border-border/70 hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-center"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 text-xs font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
+            className="px-4 py-2 text-xs font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 text-center"
           >
             {loading ? 'Allocating Member ID...' : 'Register Member'}
           </button>

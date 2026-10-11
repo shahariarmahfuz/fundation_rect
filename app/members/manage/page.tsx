@@ -186,9 +186,9 @@ export default function ManageMembersPage() {
   const totalPages = Math.ceil(total / limit) || 1;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full min-w-0">
       {/* Title & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">Manage Members</h1>
           <p className="text-xs text-muted-foreground">
@@ -198,7 +198,7 @@ export default function ManageMembersPage() {
         {hasPermission('members.create') && (
           <Link
             href="/members/add"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 shadow-xs"
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 shadow-xs shrink-0"
           >
             <Plus className="w-4 h-4" /> Add Member
           </Link>
@@ -206,76 +206,78 @@ export default function ManageMembersPage() {
       </div>
 
       {/* Search & Filters */}
-      <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[220px]">
-          <Search className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground" />
+      <div className="p-3.5 sm:p-4 rounded-xl bg-card border border-border/60 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full min-w-0">
+        <div className="relative w-full sm:flex-1 min-w-0">
+          <Search className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground shrink-0" />
           <input
             type="text"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             placeholder="Search by Member ID (M-XXXX) or Name..."
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground min-w-0"
           />
         </div>
 
-        {/* Filter by Group */}
-        <select
-          value={groupFilter}
-          onChange={(e) => { setGroupFilter(e.target.value); setPage(1); }}
-          className="px-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
-        >
-          <option value="">All Groups</option>
-          {activeGroups.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.name} ({g.code})
-            </option>
-          ))}
-        </select>
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-2 w-full sm:w-auto">
+          {/* Filter by Group */}
+          <select
+            value={groupFilter}
+            onChange={(e) => { setGroupFilter(e.target.value); setPage(1); }}
+            className="w-full sm:w-auto px-2.5 sm:px-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground truncate min-w-0"
+          >
+            <option value="">All Groups</option>
+            {activeGroups.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name} ({g.code})
+              </option>
+            ))}
+          </select>
 
-        {/* Filter by Status */}
-        <select
-          value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="px-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
-        >
-          <option value="">All Statuses</option>
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
+          {/* Filter by Status */}
+          <select
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+            className="w-full sm:w-auto px-2.5 sm:px-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground truncate min-w-0"
+          >
+            <option value="">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
 
-        {/* Page size */}
-        <select
-          value={limit}
-          onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-          className="px-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
-        >
-          <option value={10}>10 / page</option>
-          <option value={25}>25 / page</option>
-          <option value={50}>50 / page</option>
-          <option value={100}>100 / page</option>
-        </select>
+          {/* Page size */}
+          <select
+            value={limit}
+            onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
+            className="w-full sm:w-auto col-span-2 sm:col-span-1 px-2.5 sm:px-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground truncate min-w-0"
+          >
+            <option value={10}>10 / page</option>
+            <option value={25}>25 / page</option>
+            <option value={50}>50 / page</option>
+            <option value={100}>100 / page</option>
+          </select>
+        </div>
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-destructive/10 text-xs text-destructive flex items-center gap-2">
-          <AlertCircle className="w-4 h-4" />
-          <span>{error}</span>
+        <div className="p-3.5 sm:p-4 rounded-xl bg-destructive/10 text-xs text-destructive flex items-center gap-2 w-full min-w-0">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span className="break-words">{error}</span>
         </div>
       )}
 
       {/* Members Table */}
-      <div className="rounded-xl bg-card border border-border/60 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+      <div className="rounded-xl bg-card border border-border/60 shadow-xs overflow-hidden w-full max-w-full min-w-0">
+        <div className="overflow-x-auto w-full max-w-full">
+          <table className="w-full text-left border-collapse text-xs min-w-[620px]">
             <thead>
               <tr className="border-b border-border/60 bg-black/[0.02] dark:bg-white/[0.02] text-muted-foreground font-semibold">
-                <th className="py-3 px-4">Member ID</th>
-                <th className="py-3 px-4">Member Name</th>
-                <th className="py-3 px-4">Assigned Group</th>
-                <th className="py-3 px-4 hidden sm:table-cell">Phone Number</th>
-                <th className="py-3 px-4 hidden md:table-cell">Joining Date</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-3 sm:px-4">Member ID</th>
+                <th className="py-3 px-3 sm:px-4">Member Name</th>
+                <th className="py-3 px-3 sm:px-4">Assigned Group</th>
+                <th className="py-3 px-3 sm:px-4 hidden sm:table-cell">Phone Number</th>
+                <th className="py-3 px-3 sm:px-4 hidden md:table-cell">Joining Date</th>
+                <th className="py-3 px-3 sm:px-4">Status</th>
+                <th className="py-3 px-3 sm:px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
@@ -367,12 +369,12 @@ export default function ManageMembersPage() {
         </div>
 
         {/* Server-side Pagination Bar */}
-        <div className="py-3 px-4 border-t border-border/50 bg-black/[0.01] dark:bg-white/[0.01] flex items-center justify-between text-xs text-muted-foreground">
-          <span>
+        <div className="py-3 px-3 sm:px-4 border-t border-border/50 bg-black/[0.01] dark:bg-white/[0.01] flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs text-muted-foreground w-full">
+          <span className="text-center sm:text-left">
             Showing {members.length > 0 ? (page - 1) * limit + 1 : 0} to{' '}
             {Math.min(page * limit, total)} of {total} registered members
           </span>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               disabled={page <= 1}
               onClick={() => setPage(page - 1)}
@@ -396,8 +398,8 @@ export default function ManageMembersPage() {
 
       {/* View Member Modal */}
       {viewMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="relative w-full max-w-md bg-card border border-border/60 rounded-xl shadow-2xl p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-3 sm:p-4 animate-in fade-in overflow-y-auto">
+          <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-card border border-border/60 rounded-xl shadow-2xl p-4 sm:p-6 space-y-4 my-auto min-w-0">
             <div className="flex items-center justify-between border-b border-border/50 pb-3">
               <div>
                 <h3 className="text-sm font-bold text-foreground">Member Details</h3>
@@ -468,8 +470,8 @@ export default function ManageMembersPage() {
 
       {/* Edit Member Modal */}
       {editMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="relative w-full max-w-md bg-card border border-border/60 rounded-xl shadow-2xl p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-3 sm:p-4 animate-in fade-in overflow-y-auto">
+          <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-card border border-border/60 rounded-xl shadow-2xl p-4 sm:p-6 space-y-4 my-auto min-w-0">
             <div className="flex items-center justify-between border-b border-border/50 pb-3">
               <div>
                 <h3 className="text-sm font-bold text-foreground">Edit Member Information</h3>

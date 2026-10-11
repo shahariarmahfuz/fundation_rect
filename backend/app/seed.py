@@ -25,6 +25,12 @@ PERMISSIONS = [
     ("beneficiaries.activate", "Activate beneficiaries", "beneficiaries"),
     ("beneficiaries.deactivate", "Deactivate beneficiaries", "beneficiaries"),
     ("beneficiary_ledger.view", "View beneficiary financial ledger", "beneficiaries"),
+    # Donation permissions
+    ("donations.view", "View donations and donation management", "donations"),
+    ("donations.create", "Record new donations", "donations"),
+    ("donations.update", "Edit donation details", "donations"),
+    ("donations.cancel", "Cancel or reverse donation records", "donations"),
+    ("donation_reports.view", "View donation reports and summaries", "donations"),
     # Role permissions
     ("roles.manage", "Assign and manage RBAC roles and permissions", "roles"),
 ]
