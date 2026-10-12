@@ -113,8 +113,9 @@ def upload_image(
         "resource_type": "image",
     }
 
+    import io
     try:
-        response = cloudinary.uploader.upload(file_bytes, **upload_options)
+        response = cloudinary.uploader.upload(io.BytesIO(file_bytes), **upload_options)
     except Exception as e:
         raise RuntimeError(f"Cloudinary upload failed: {str(e)}")
 
