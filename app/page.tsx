@@ -13,9 +13,11 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { useSettings } from '@/lib/settings-context';
 
 export default function HomePage() {
   const { hasPermission, activeUsername } = useAuth();
+  const { foundationName, tagline } = useSettings();
   const [stats, setStats] = useState({
     groups: 0,
     members: 0,
@@ -52,10 +54,10 @@ export default function HomePage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-4 sm:pb-6 border-b border-border/50 w-full min-w-0">
         <div className="min-w-0 flex-1">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground break-words">
-            Foundation Management System
+            {foundationName}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">
-            Centralized governance for community groups, active members, and registered beneficiaries.
+            {tagline || 'Centralized governance for community groups, active members, and registered beneficiaries.'}
           </p>
         </div>
         <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-card border border-border/60 shadow-xs self-start sm:self-auto shrink-0">

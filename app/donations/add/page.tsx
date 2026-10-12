@@ -26,6 +26,14 @@ const PAYMENT_METHODS = [
   'Cheque',
 ];
 
+type GroupOption = {
+  id: number;
+  code: string;
+  name: string;
+  status: string;
+  available_balance: string;
+};
+
 export default function AddDonationPage() {
   const router = useRouter();
   const { hasPermission, user } = useAuth();
@@ -38,9 +46,35 @@ export default function AddDonationPage() {
   const [transactionReference, setTransactionReference] = useState('');
   const [notes, setNotes] = useState('');
 
+  // Receiving Group
+  const [groups, setGroups] = useState<GroupOption[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<number | ''>('');
+  const [loadingGroups, setLoadingGroups] = useState(true);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<any | null>(null);
+
+  React.useEffect(() => {
+    async function fetchGroups() {
+      try {
+        setLoadingGroups(true);
+        const res = await fetch('/api/donations/active-groups-with-balance', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setGroups(data);
+          if (data.length > 0) {
+            setSelectedGroupId(data[0].id);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load groups:', err);
+      } finally {
+        setLoadingGroups(false);
+      }
+    }
+    fetchGroups();
+  }, []);
 
   if (!hasPermission('donations.create')) {
     return (
@@ -75,6 +109,11 @@ export default function AddDonationPage() {
       return;
     }
 
+    if (!selectedGroupId) {
+      setError('Please select an active receiving group for this donation.');
+      return;
+    }
+
     try {
       setLoading(true);
       const res = await fetch('/api/donations', {
@@ -85,6 +124,7 @@ export default function AddDonationPage() {
           donation_date: donationDate,
           donor_name: donorName.trim(),
           amount: parsedAmount.toFixed(2),
+          group_id: Number(selectedGroupId),
           payment_method: paymentMethod,
           transaction_reference: transactionReference.trim() || undefined,
           notes: notes.trim() || undefined,
@@ -149,7 +189,7 @@ export default function AddDonationPage() {
             <span>Donation Recorded Successfully!</span>
           </div>
           <p className="text-xs leading-relaxed">
-            Sequential ID <strong className="font-mono text-emerald-950 dark:text-emerald-100">{success.donation_id}</strong> has been created in PostgreSQL for donor <strong className="text-foreground">{success.donor_name}</strong> in the amount of <strong className="font-mono">${Number(success.amount).toFixed(2)}</strong>.
+            Sequential ID <strong className="font-mono text-emerald-950 dark:text-emerald-100">{success.donation_id}</strong> has been created in PostgreSQL for donor <strong className="text-foreground">{success.donor_name}</strong> in the amount of <strong className="font-mono">${Number(success.amount).toFixed(2)}</strong> {success.group_name && <span>(Credited to group: <strong className="text-foreground">{success.group_name}</strong>)</span>}.
           </p>
           <div className="pt-1 flex items-center gap-3">
             <Link
@@ -251,6 +291,43 @@ export default function AddDonationPage() {
                 />
               </div>
             </div>
+          </div>
+
+          {/* Receiving Group */}
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1.5">
+              Receiving Group <span className="text-destructive">*</span>
+            </label>
+            {loadingGroups ? (
+              <div className="text-xs text-muted-foreground py-2">Loading active groups...</div>
+            ) : (
+              <select
+                required
+                value={selectedGroupId}
+                onChange={(e) => setSelectedGroupId(Number(e.target.value))}
+                className="w-full px-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+              >
+                <option value="" disabled>Select Receiving Group...</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.code} — {g.name} (Balance: ৳{Number(g.available_balance).toLocaleString('en-US', { minimumFractionDigits: 2 })})
+                  </option>
+                ))}
+              </select>
+            )}
+            {selectedGroupId && groups.find(g => g.id === Number(selectedGroupId)) && (
+              <div className="mt-2 p-2.5 rounded-lg bg-muted/40 border border-border/50 flex items-center justify-between">
+                <span className="text-[11px] font-medium text-foreground">
+                  Target Group Fund: <strong className="text-foreground">{groups.find(g => g.id === Number(selectedGroupId))?.name}</strong> ({groups.find(g => g.id === Number(selectedGroupId))?.code})
+                </span>
+                <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                  Available: ৳{Number(groups.find(g => g.id === Number(selectedGroupId))?.available_balance || 0).toFixed(2)}
+                </span>
+              </div>
+            )}
+            <span className="text-[10px] text-muted-foreground mt-1 block">
+              Every donation atomically credits the selected group's fund ledger.
+            </span>
           </div>
 
           {/* Amount & Payment Method */}

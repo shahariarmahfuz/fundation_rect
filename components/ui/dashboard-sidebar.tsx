@@ -12,6 +12,7 @@ import {
   HandHeart,
   HandCoins,
   PlusCircle,
+  Receipt,
   ReceiptText,
   BarChart3,
   ShieldCheck, 
@@ -21,6 +22,7 @@ import {
   Wallet,
   ClipboardList,
   BookOpenText,
+  Landmark,
   ChevronDown,
   ChevronRight,
   Inbox,
@@ -36,6 +38,7 @@ import {
   X
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { useSettings } from '@/lib/settings-context';
 
 export type NavItemData = {
   id: string;
@@ -44,7 +47,7 @@ export type NavItemData = {
   href?: string;
   badge?: number | string;
   shortcut?: string;
-  permission?: string;
+  permission?: string | string[];
   children?: NavItemData[];
 };
 
@@ -104,18 +107,57 @@ export const foundationNavGroups: NavGroupData[] = [
         ]
       },
       {
+        id: 'sadaqah-parent',
+        title: 'Sadaqah',
+        icon: HandHeart,
+        children: [
+          { id: 'sadaqah-add', title: 'Add Sadaqah', icon: PlusCircle, href: '/sadaqah/add', permission: 'sadaqah.create' },
+          { id: 'sadaqah-manage', title: 'Manage Sadaqah', icon: ReceiptText, href: '/sadaqah/manage', permission: 'sadaqah.view' },
+          { id: 'sadaqah-report', title: 'Sadaqah Report', icon: BarChart3, href: '/sadaqah/report', permission: 'sadaqah_reports.view' },
+        ]
+      },
+      {
+        id: 'qard-hasan-parent',
+        title: 'Qard Hasan',
+        icon: Landmark,
+        children: [
+          { id: 'qard-hasan-add', title: 'Add Qard Hasan', icon: PlusCircle, href: '/qard-hasan/add', permission: 'qard_hasan.create' },
+          { id: 'qard-hasan-manage', title: 'Manage Qard Hasan', icon: ReceiptText, href: '/qard-hasan/manage', permission: 'qard_hasan.view' },
+          { id: 'qard-hasan-repayment', title: 'Repayment', icon: Wallet, href: '/qard-hasan/repayment', permission: ['qard_hasan.repayment.create', 'qard_hasan.repayment.view'] },
+          { id: 'qard-hasan-report', title: 'Report', icon: BarChart3, href: '/qard-hasan/report', permission: 'qard_hasan_reports.view' },
+        ]
+      },
+      {
+        id: 'contribution-parent',
+        title: 'Contribution',
+        icon: Receipt,
+        children: [
+          { id: 'contribution-add', title: 'Add Contribution', icon: PlusCircle, href: '/contributions/add', permission: 'contributions.create' },
+          { id: 'contribution-manage', title: 'Manage Contribution', icon: ReceiptText, href: '/contributions/manage', permission: 'contributions.view' },
+          { id: 'contribution-report', title: 'Contribution Report', icon: BarChart3, href: '/contributions/report', permission: 'contribution_reports.view' },
+          { id: 'contribution-due-list', title: 'Due Contribution', icon: Calendar, href: '/contributions/due-list', permission: 'contributions.due_list.view' },
+        ]
+      },
+      {
         id: 'roles-parent',
         title: 'Role Permissions',
         icon: ShieldCheck,
         href: '/roles',
         permission: 'roles.manage',
+      },
+      {
+        id: 'settings-parent',
+        title: 'Settings',
+        icon: Settings,
+        href: '/settings',
+        permission: 'settings.view',
       }
     ]
   }
 ];
 
 export const mockBottomItems: NavItemData[] = [
-  { id: 'settings', title: 'Settings', icon: Settings, href: '/roles', shortcut: '⌘,' },
+  { id: 'settings', title: 'Settings', icon: Settings, href: '/settings', permission: 'settings.view', shortcut: '⌘,' },
   { id: 'logout', title: 'Log out', icon: LogOut },
 ];
 
@@ -187,6 +229,19 @@ export function UserProfileMenu({ selected, onSelect }: { selected?: string; onS
                 >
                   <ShieldCheck className="w-3.5 h-3.5 text-muted-foreground" strokeWidth={1.5} />
                   <span>Role Permissions</span>
+                </Link>
+              </>
+            )}
+            {authContext?.hasPermission?.('settings.view') && (
+              <>
+                <div className="h-px bg-border/50 my-1 mx-1" />
+                <Link
+                  href="/settings"
+                  onClick={() => setIsOpen(false)}
+                  className="px-2.5 py-1.5 text-[12px] text-foreground/80 hover:bg-black/5 dark:hover:bg-white/5 rounded-md cursor-pointer transition-colors flex items-center gap-2"
+                >
+                  <Settings className="w-3.5 h-3.5 text-muted-foreground" strokeWidth={1.5} />
+                  <span>Settings</span>
                 </Link>
               </>
             )}
@@ -374,7 +429,11 @@ export function SidebarNav({
       if (!authContext || !authContext.user || authContext.loading) {
         return null;
       }
-      if (!authContext.hasPermission(item.permission)) {
+      if (Array.isArray(item.permission)) {
+        if (!item.permission.some((p: string) => authContext.hasPermission(p))) {
+          return null;
+        }
+      } else if (!authContext.hasPermission(item.permission)) {
         return null;
       }
     }
@@ -396,8 +455,39 @@ export function SidebarNav({
     items: group.items.map(filterItem).filter((i): i is NavItemData => i !== null)
   })).filter(group => group.items.length > 0);
 
+  let settingsContext: any = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    settingsContext = useSettings();
+  } catch (e) {}
+
+  const foundationName = settingsContext?.foundationName || 'Al-Barakah Welfare Foundation';
+  const foundationShortName = settingsContext?.foundationShortName || 'ABWF';
+  const foundationLogo = settingsContext?.foundationLogo;
+
   return (
     <div className={`flex flex-col w-full h-full bg-card/50 border-r border-border/50 p-3 font-sans max-w-full min-w-0 ${className}`}>
+      {/* Foundation Brand Header */}
+      <div className="flex items-center gap-2.5 px-2.5 py-2 mb-2 rounded-lg bg-black/[0.02] dark:bg-white/[0.02] border border-border/40 shrink-0">
+        {foundationLogo ? (
+          <img src={foundationLogo} alt={foundationName} className="w-7 h-7 object-contain rounded shrink-0" />
+        ) : (
+          <div className="w-7 h-7 rounded-md bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0 border border-primary/20">
+            {foundationShortName ? foundationShortName.slice(0, 2) : 'AB'}
+          </div>
+        )}
+        <div className="flex flex-col min-w-0 overflow-hidden">
+          <span className="text-[13px] font-semibold text-foreground truncate leading-tight">
+            {foundationName}
+          </span>
+          {foundationShortName && (
+            <span className="text-[10px] text-muted-foreground truncate leading-tight font-mono">
+              {foundationShortName}
+            </span>
+          )}
+        </div>
+      </div>
+
       <UserProfileMenu selected={activeWorkspace} onSelect={onWorkspaceSelect} />
 
       <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col gap-4 mt-2">

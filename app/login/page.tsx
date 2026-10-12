@@ -3,12 +3,14 @@
 import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { useSettings } from '@/lib/settings-context';
 import { ShieldCheck, Lock, User, AlertCircle, Loader2 } from 'lucide-react';
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
+  const { foundationName, foundationLogo, tagline } = useSettings();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -45,14 +47,20 @@ function LoginForm() {
       <div className="w-full max-w-md bg-card rounded-2xl border border-border/60 shadow-lg p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200">
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center mb-3 shadow-xs">
-            <ShieldCheck className="w-6 h-6" strokeWidth={1.75} />
-          </div>
+          {foundationLogo ? (
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-3 shadow-xs overflow-hidden p-1">
+              <img src={foundationLogo} alt={foundationName} className="w-full h-full object-contain" />
+            </div>
+          ) : (
+            <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center mb-3 shadow-xs">
+              <ShieldCheck className="w-6 h-6" strokeWidth={1.75} />
+            </div>
+          )}
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            Foundation Management
+            {foundationName}
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Sign in to access your governance and ledger dashboard
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-sm">
+            {tagline || 'Sign in to access your governance and ledger dashboard'}
           </p>
         </div>
 

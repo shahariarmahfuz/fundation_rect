@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import './globals.css';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
+import { SettingsProvider, useSettings } from '@/lib/settings-context';
 import { SidebarNav } from '@/components/ui/dashboard-sidebar';
 import { PanelLeftClose, PanelLeftOpen, Menu, X, LogOut, Loader2 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -11,6 +12,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const { user, loading, logout } = useAuth();
+  const { appDisplayName, foundationName, foundationLogo } = useSettings();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -93,9 +95,14 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         aria-label="Mobile Navigation Drawer"
       >
         <div className="flex items-center justify-between p-3 border-b border-border/50 shrink-0">
-          <span className="font-semibold text-xs tracking-tight text-foreground truncate">
-            Foundation Management
-          </span>
+          <div className="flex items-center gap-2 min-w-0">
+            {foundationLogo ? (
+              <img src={foundationLogo} alt={foundationName} className="w-5 h-5 object-contain rounded shrink-0" />
+            ) : null}
+            <span className="font-semibold text-xs tracking-tight text-foreground truncate">
+              {appDisplayName}
+            </span>
+          </div>
           <button
             onClick={() => setMobileDrawerOpen(false)}
             className="p-1.5 rounded-md text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground cursor-pointer"
@@ -146,9 +153,12 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
                   <Menu className="w-5 h-5" />
                 </span>
               </button>
-              <div className="flex items-center gap-1.5 min-w-0 truncate">
+              <div className="flex items-center gap-2 min-w-0 truncate">
+                {foundationLogo ? (
+                  <img src={foundationLogo} alt={foundationName} className="w-6 h-6 object-contain rounded shrink-0" />
+                ) : null}
                 <span className="font-semibold text-foreground text-xs sm:text-sm truncate">
-                  Foundation Management System
+                  {appDisplayName}
                 </span>
               </div>
             </div>
@@ -223,7 +233,9 @@ export default function RootLayout({
       </head>
       <body className="h-full antialiased overflow-x-hidden">
         <AuthProvider>
-          <DashboardShell>{children}</DashboardShell>
+          <SettingsProvider>
+            <DashboardShell>{children}</DashboardShell>
+          </SettingsProvider>
         </AuthProvider>
       </body>
     </html>

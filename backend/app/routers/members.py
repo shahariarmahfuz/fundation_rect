@@ -17,12 +17,15 @@ from backend.app.security import get_current_user, require_permission
 router = APIRouter(prefix="/api/members", tags=["members"])
 
 def get_next_member_id(db: Session) -> str:
+    from backend.app.models import FoundationSetting
+    setting = db.query(FoundationSetting).filter(FoundationSetting.id == 1).first()
+    prefix = setting.member_prefix if setting and setting.member_prefix else "M-"
     # Atomic sequence generation
     res = db.execute(text("SELECT nextval('member_id_seq')")).scalar()
-    mid = f"M-{int(res):04d}"
+    mid = f"{prefix}{int(res):04d}"
     while db.query(Member).filter(Member.member_id == mid).first() is not None:
         res = db.execute(text("SELECT nextval('member_id_seq')")).scalar()
-        mid = f"M-{int(res):04d}"
+        mid = f"{prefix}{int(res):04d}"
     return mid
 
 @router.get("", response_model=dict)

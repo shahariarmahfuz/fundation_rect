@@ -20,13 +20,16 @@ from backend.app.security import get_current_user, require_permission
 router = APIRouter(prefix="/api/groups", tags=["groups"])
 
 def get_next_group_code(db: Session) -> str:
+    from backend.app.models import FoundationSetting
+    setting = db.query(FoundationSetting).filter(FoundationSetting.id == 1).first()
+    prefix = setting.group_prefix if setting and setting.group_prefix else "G-"
     # Use postgres sequence atomically
     res = db.execute(text("SELECT nextval('group_code_seq')")).scalar()
-    code = f"G-{int(res):04d}"
+    code = f"{prefix}{int(res):04d}"
     # Verify uniqueness in case of custom codes created earlier
     while db.query(Group).filter(Group.code == code).first() is not None:
         res = db.execute(text("SELECT nextval('group_code_seq')")).scalar()
-        code = f"G-{int(res):04d}"
+        code = f"{prefix}{int(res):04d}"
     return code
 
 @router.get("", response_model=dict)
@@ -259,14 +262,14 @@ def get_group_fund_ledger(
             "available_balance": balance,
             "total_transactions": len(all_txs)
         },
-        "items": transactions,
+        "items": [GroupFundTransactionOut.model_validate(t) for t in transactions],
         "total": total_count,
         "page": page,
         "limit": limit,
         "total_pages": (total_count + limit - 1) // limit if total_count > 0 else 1
     }
 
-@router.post("/{group_id}/funds/transaction", status_code=status.HTTP_201_CREATED)
+@router.post("/{group_id}/funds/transaction", response_model=GroupFundTransactionOut, status_code=status.HTTP_201_CREATED)
 def record_group_transaction(
     group_id: int,
     transaction_type: str = Query(..., pattern="^(Received|Spent)$"),

@@ -31,8 +31,37 @@ PERMISSIONS = [
     ("donations.update", "Edit donation details", "donations"),
     ("donations.cancel", "Cancel or reverse donation records", "donations"),
     ("donation_reports.view", "View donation reports and summaries", "donations"),
+    # Sadaqah permissions
+    ("sadaqah.view", "View Sadaqah distributions and management page", "sadaqah"),
+    ("sadaqah.create", "Record new Sadaqah distributions and multi-group allocations", "sadaqah"),
+    ("sadaqah.cancel", "Cancel or reverse Sadaqah distributions and restore group funds", "sadaqah"),
+    ("sadaqah_reports.view", "View Sadaqah analytical reports and summaries", "sadaqah"),
+    # Qard Hasan permissions
+    ("qard_hasan.view", "View Qard Hasan loans and management directory", "qard_hasan"),
+    ("qard_hasan.create", "Disburse new Qard Hasan interest-free loans", "qard_hasan"),
+    ("qard_hasan.repayment.view", "View Qard Hasan repayment history and receipts", "qard_hasan"),
+    ("qard_hasan.repayment.create", "Record Qard Hasan loan principal repayments", "qard_hasan"),
+    ("qard_hasan.cancel", "Cancel or reverse Qard Hasan loans and restore group funds", "qard_hasan"),
+    ("qard_hasan_reports.view", "View Qard Hasan analytics and loan audit reports", "qard_hasan"),
+    # Contribution permissions
+    ("contributions.view", "View monthly contributions and management records", "contributions"),
+    ("contributions.create", "Record member monthly contributions and batch collections", "contributions"),
+    ("contributions.update", "Edit contribution details and metadata", "contributions"),
+    ("contributions.cancel", "Cancel or reverse member contributions and restore group funds", "contributions"),
+    ("contributions.due_list.view", "View members due contribution report and arrears", "contributions"),
+    ("contribution_reports.view", "View contribution analytics and financial summaries", "contributions"),
+    ("contribution_settings.view", "View global monthly contribution configuration", "contributions"),
+    ("contribution_settings.update", "Update global monthly contribution amount", "contributions"),
     # Role permissions
     ("roles.manage", "Assign and manage RBAC roles and permissions", "roles"),
+    # Settings permissions
+    ("settings.view", "View foundation settings and configurations", "settings"),
+    ("settings.foundation.update", "Update foundation profile and branding settings", "settings"),
+    ("settings.contributions.update", "Update global contribution configuration and policy", "settings"),
+    ("settings.financial.update", "Update financial currency, accounting and receipt rules", "settings"),
+    ("settings.organization.update", "Update organization and system preferences", "settings"),
+    ("settings.ids.update", "Update entity ID prefixes and default statuses", "settings"),
+    ("settings.security.view", "View security configuration and manage credentials", "settings"),
 ]
 
 def seed_database():
@@ -88,6 +117,28 @@ def seed_database():
             perm_map["members.due_list.view"],
             perm_map["beneficiaries.view"],
             perm_map["beneficiary_ledger.view"],
+            perm_map["donations.view"],
+            perm_map["donations.create"],
+            perm_map["donations.update"],
+            perm_map["donations.cancel"],
+            perm_map["donation_reports.view"],
+            perm_map["sadaqah.view"],
+            perm_map["sadaqah.create"],
+            perm_map["sadaqah.cancel"],
+            perm_map["sadaqah_reports.view"],
+            perm_map["qard_hasan.view"],
+            perm_map["qard_hasan.create"],
+            perm_map["qard_hasan.repayment.view"],
+            perm_map["qard_hasan.repayment.create"],
+            perm_map["qard_hasan.cancel"],
+            perm_map["qard_hasan_reports.view"],
+            perm_map["contributions.view"],
+            perm_map["contributions.create"],
+            perm_map["contributions.cancel"],
+            perm_map["contributions.due_list.view"],
+            perm_map["contribution_reports.view"],
+            perm_map["contribution_settings.view"],
+            perm_map["settings.view"],
         ]
         finance_role.permissions = finance_perms
 

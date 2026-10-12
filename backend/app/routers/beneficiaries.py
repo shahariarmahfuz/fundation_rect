@@ -20,11 +20,14 @@ from backend.app.security import get_current_user, require_permission
 router = APIRouter(prefix="/api/beneficiaries", tags=["beneficiaries"])
 
 def get_next_beneficiary_id(db: Session) -> str:
+    from backend.app.models import FoundationSetting
+    setting = db.query(FoundationSetting).filter(FoundationSetting.id == 1).first()
+    prefix = setting.beneficiary_prefix if setting and setting.beneficiary_prefix else "B-"
     res = db.execute(text("SELECT nextval('beneficiary_id_seq')")).scalar()
-    bid = f"B-{int(res):04d}"
+    bid = f"{prefix}{int(res):04d}"
     while db.query(Beneficiary).filter(Beneficiary.beneficiary_id == bid).first() is not None:
         res = db.execute(text("SELECT nextval('beneficiary_id_seq')")).scalar()
-        bid = f"B-{int(res):04d}"
+        bid = f"{prefix}{int(res):04d}"
     return bid
 
 @router.get("", response_model=dict)

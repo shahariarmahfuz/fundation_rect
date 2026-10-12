@@ -386,6 +386,7 @@ export default function DonationReportPage() {
                 <th className="py-3 px-3 sm:px-4">Donation ID</th>
                 <th className="py-3 px-3 sm:px-4">Date</th>
                 <th className="py-3 px-3 sm:px-4">Donor Name</th>
+                <th className="py-3 px-3 sm:px-4">Receiving Group</th>
                 <th className="py-3 px-3 sm:px-4">Amount</th>
                 <th className="py-3 px-3 sm:px-4">Method</th>
                 <th className="py-3 px-3 sm:px-4">Reference</th>
@@ -395,14 +396,14 @@ export default function DonationReportPage() {
             <tbody className="divide-y divide-border/40">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-muted-foreground">
+                  <td colSpan={8} className="py-10 text-center text-muted-foreground">
                     <div className="inline-block w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin mb-2" />
                     <p>Loading transactions...</p>
                   </td>
                 </tr>
               ) : detailedItems.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-muted-foreground">
+                  <td colSpan={8} className="py-10 text-center text-muted-foreground">
                     <HandCoins className="w-7 h-7 mx-auto mb-1.5 opacity-30 text-primary" />
                     <p className="font-semibold text-foreground">No records found for period</p>
                   </td>
@@ -418,6 +419,15 @@ export default function DonationReportPage() {
                     </td>
                     <td className="py-2.5 px-3 sm:px-4 font-medium text-foreground">
                       {d.donor_name}
+                    </td>
+                    <td className="py-2.5 px-3 sm:px-4">
+                      {d.group_code ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary" title={d.group_name || d.group_code}>
+                          {d.group_code}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground text-[10px] italic">Legacy</span>
+                      )}
                     </td>
                     <td className="py-2.5 px-3 sm:px-4 font-mono font-bold text-foreground">
                       ${Number(d.amount).toFixed(2)}

@@ -6,7 +6,7 @@ from datetime import datetime, date
 from decimal import Decimal
 
 from backend.app.database import get_db
-from backend.app.models import Donation, User
+from backend.app.models import Donation, User, Group, GroupFundTransaction
 from backend.app.schemas import (
     DonationCreate,
     DonationUpdate,
@@ -16,18 +16,55 @@ from backend.app.schemas import (
     DonationPaymentMethodSummary,
     DonationPeriodicSummary,
 )
-from backend.app.security import require_permission
+from backend.app.security import require_permission, get_current_user
 
 router = APIRouter(prefix="/api/donations", tags=["donations"])
 
 
+@router.get("/active-groups-with-balance")
+def get_active_groups_for_donation(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    user_perms = {p.code for p in current_user.role.permissions} if current_user.role else set()
+    required = ["donations.create", "donations.view", "group_funds.view"]
+    if not any(p in user_perms for p in required):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access Denied: Missing required permission.")
+
+    groups = db.query(Group).filter(Group.status == "Active").order_by(Group.code.asc()).all()
+    result = []
+    for g in groups:
+        recv = db.query(func.coalesce(func.sum(GroupFundTransaction.amount), Decimal("0.00"))).filter(
+            GroupFundTransaction.group_id == g.id,
+            GroupFundTransaction.transaction_type == "Received"
+        ).scalar()
+        spent = db.query(func.coalesce(func.sum(GroupFundTransaction.amount), Decimal("0.00"))).filter(
+            GroupFundTransaction.group_id == g.id,
+            GroupFundTransaction.transaction_type == "Spent"
+        ).scalar()
+        balance = Decimal(str(recv)) - Decimal(str(spent))
+        result.append({
+            "id": g.id,
+            "code": g.code,
+            "name": g.name,
+            "status": g.status,
+            "available_balance": str(balance),
+            "total_received": str(recv),
+            "total_spent": str(spent)
+        })
+    return result
+
+
 def get_next_donation_id(db: Session) -> str:
     """Concurrency-safe sequential donation ID generation using Postgres sequence."""
+    from backend.app.models import FoundationSetting
+    setting = db.query(FoundationSetting).filter(FoundationSetting.id == 1).first()
+    prefix = setting.donation_prefix if setting and setting.donation_prefix else "D-"
     res = db.execute(text("SELECT nextval('donation_id_seq')")).scalar()
-    did = f"D-{int(res):04d}"
+    did = f"{prefix}{int(res):04d}"
     while db.query(Donation).filter(Donation.donation_id == did).first() is not None:
         res = db.execute(text("SELECT nextval('donation_id_seq')")).scalar()
-        did = f"D-{int(res):04d}"
+        did = f"{prefix}{int(res):04d}"
     return did
 
 
@@ -38,6 +75,9 @@ def serialize_donation(d: Donation) -> DonationOut:
         donation_date=d.donation_date,
         donor_name=d.donor_name,
         amount=Decimal(str(d.amount)),
+        group_id=d.group_id,
+        group_code=d.group.code if d.group else None,
+        group_name=d.group.name if d.group else None,
         payment_method=d.payment_method,
         transaction_reference=d.transaction_reference,
         notes=d.notes,
@@ -79,6 +119,19 @@ def create_donation(
             detail="Payment method is required."
         )
 
+    # Validate receiving group
+    group = db.query(Group).filter(Group.id == payload.group_id).first()
+    if not group:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Selected receiving group does not exist."
+        )
+    if group.status != "Active":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Receiving Group {group.code} ({group.name}) is inactive. Donations can only be credited to active groups."
+        )
+
     clean_ref = payload.transaction_reference.strip() if payload.transaction_reference else None
     if clean_ref:
         existing_ref = db.query(Donation).filter(Donation.transaction_reference == clean_ref).first()
@@ -90,19 +143,34 @@ def create_donation(
 
     did = get_next_donation_id(db)
 
+    # 1. Create donation
     donation = Donation(
         donation_id=did,
         donation_date=payload.donation_date,
         donor_name=clean_donor,
         amount=payload.amount,
+        group_id=group.id,
         payment_method=clean_method,
         transaction_reference=clean_ref,
         notes=payload.notes.strip() if payload.notes else None,
         recorded_by_id=current_user.id,
         status="COMPLETED"
     )
-
     db.add(donation)
+
+    # 2. Credit the selected group's fund ledger
+    tx_datetime = datetime.combine(payload.donation_date, datetime.utcnow().time())
+    group_tx = GroupFundTransaction(
+        reference=did,
+        group_id=group.id,
+        transaction_date=tx_datetime,
+        transaction_type="Received",
+        amount=payload.amount,
+        description=f"Donation {did} from {clean_donor} ({clean_method})",
+        created_by=current_user.full_name
+    )
+    db.add(group_tx)
+
     db.commit()
     db.refresh(donation)
     return serialize_donation(donation)
@@ -112,6 +180,7 @@ def create_donation(
 def list_donations(
     q: Optional[str] = Query(None, description="Search by Donation ID, Donor Name, or Reference"),
     payment_method: Optional[str] = Query(None, description="Filter by payment method"),
+    group_id: Optional[int] = Query(None, description="Filter by receiving group"),
     status_filter: Optional[str] = Query(None, alias="status", description="Filter by status (COMPLETED, CANCELLED)"),
     start_date: Optional[date] = Query(None, description="Filter start date"),
     end_date: Optional[date] = Query(None, description="Filter end date"),
@@ -136,6 +205,9 @@ def list_donations(
 
     if payment_method and payment_method.strip():
         query = query.filter(Donation.payment_method == payment_method.strip())
+
+    if group_id:
+        query = query.filter(Donation.group_id == group_id)
 
     if status_filter and status_filter.strip():
         query = query.filter(Donation.status == status_filter.strip())
@@ -184,6 +256,7 @@ def get_donation_report(
     start_date: Optional[date] = Query(None, description="Start date filter"),
     end_date: Optional[date] = Query(None, description="End date filter"),
     payment_method: Optional[str] = Query(None, description="Payment method filter"),
+    group_id: Optional[int] = Query(None, description="Group filter"),
     group_by: str = Query("month", description="Grouping period: month or day"),
     current_user: User = Depends(require_permission("donation_reports.view")),
     db: Session = Depends(get_db)
@@ -196,6 +269,8 @@ def get_donation_report(
         query = query.filter(Donation.donation_date <= end_date)
     if payment_method and payment_method.strip():
         query = query.filter(Donation.payment_method == payment_method.strip())
+    if group_id:
+        query = query.filter(Donation.group_id == group_id)
 
     # Overall totals
     totals = query.with_entities(
@@ -359,6 +434,19 @@ def cancel_donation(
     d.cancelled_at = func.now()
     d.cancelled_by_id = current_user.id
     d.cancel_reason = reason
+
+    # Reverse Group Fund transaction if group was assigned
+    if d.group_id:
+        rev_tx = GroupFundTransaction(
+            reference=f"REV-{d.donation_id}",
+            group_id=d.group_id,
+            transaction_date=datetime.utcnow(),
+            transaction_type="Spent",
+            amount=d.amount,
+            description=f"Reversal of Donation {d.donation_id}: {reason}",
+            created_by=current_user.full_name
+        )
+        db.add(rev_tx)
 
     db.commit()
     db.refresh(d)

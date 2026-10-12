@@ -43,6 +43,8 @@ export default function ManageDonationsPage() {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [paymentMethodFilter, setPaymentMethodFilter] = useState('');
+  const [groupFilter, setGroupFilter] = useState('');
+  const [groups, setGroups] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -52,6 +54,21 @@ export default function ManageDonationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadGroups() {
+      try {
+        const res = await fetch('/api/donations/active-groups-with-balance', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setGroups(data);
+        }
+      } catch (e) {
+        console.error('Failed to load groups filter:', e);
+      }
+    }
+    loadGroups();
+  }, []);
 
   // View Details Modal State
   const [viewDonation, setViewDonation] = useState<any | null>(null);
@@ -85,6 +102,7 @@ export default function ManageDonationsPage() {
       });
       if (search.trim()) params.append('q', search.trim());
       if (paymentMethodFilter) params.append('payment_method', paymentMethodFilter);
+      if (groupFilter) params.append('group_id', groupFilter);
       if (statusFilter) params.append('status', statusFilter);
       if (startDate) params.append('start_date', startDate);
       if (endDate) params.append('end_date', endDate);
@@ -110,7 +128,7 @@ export default function ManageDonationsPage() {
 
   useEffect(() => {
     fetchDonations();
-  }, [page, limit, search, paymentMethodFilter, statusFilter, startDate, endDate, sortBy, order]);
+  }, [page, limit, search, paymentMethodFilter, groupFilter, statusFilter, startDate, endDate, sortBy, order]);
 
   if (!hasPermission('donations.view')) {
     return (
@@ -331,7 +349,18 @@ export default function ManageDonationsPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full sm:w-auto">
+            <select
+              value={groupFilter}
+              onChange={(e) => { setGroupFilter(e.target.value); setPage(1); }}
+              className="w-full sm:w-auto px-2.5 sm:px-3 py-2 text-xs rounded-lg bg-background border border-border/70 focus:outline-none focus:ring-1 focus:ring-primary text-foreground truncate min-w-0"
+            >
+              <option value="">All Groups</option>
+              {groups.map((g) => (
+                <option key={g.id} value={g.id}>{g.code} - {g.name}</option>
+              ))}
+            </select>
+
             <select
               value={paymentMethodFilter}
               onChange={(e) => { setPaymentMethodFilter(e.target.value); setPage(1); }}
@@ -377,12 +406,13 @@ export default function ManageDonationsPage() {
             />
           </div>
 
-          {(startDate || endDate || paymentMethodFilter || statusFilter || search) && (
+          {(startDate || endDate || paymentMethodFilter || groupFilter || statusFilter || search) && (
             <button
               onClick={() => {
                 setStartDate('');
                 setEndDate('');
                 setPaymentMethodFilter('');
+                setGroupFilter('');
                 setStatusFilter('');
                 setSearch('');
                 setPage(1);
@@ -412,6 +442,7 @@ export default function ManageDonationsPage() {
                   </div>
                 </th>
                 <th className="py-3 px-3 sm:px-4">Donor Name</th>
+                <th className="py-3 px-3 sm:px-4">Receiving Group</th>
                 <th className="py-3 px-3 sm:px-4 cursor-pointer hover:text-foreground select-none" onClick={() => toggleSort('amount')}>
                   <div className="flex items-center gap-1">
                     Amount {sortBy === 'amount' && (order === 'asc' ? '▲' : '▼')}
@@ -427,14 +458,14 @@ export default function ManageDonationsPage() {
             <tbody className="divide-y divide-border/40">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-muted-foreground">
+                  <td colSpan={10} className="py-12 text-center text-muted-foreground">
                     <div className="inline-block w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin mb-2" />
                     <p>Loading donation records...</p>
                   </td>
                 </tr>
               ) : donations.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-muted-foreground">
+                  <td colSpan={10} className="py-12 text-center text-muted-foreground">
                     <HandCoins className="w-8 h-8 mx-auto mb-2 opacity-30 text-primary" />
                     <p className="font-semibold text-foreground">No donations recorded yet</p>
                     <p className="text-[11px] mt-0.5">Use &quot;Add Donation&quot; to register new contributions.</p>
@@ -451,6 +482,15 @@ export default function ManageDonationsPage() {
                     </td>
                     <td className="py-3 px-3 sm:px-4 font-medium text-foreground">
                       {d.donor_name}
+                    </td>
+                    <td className="py-3 px-3 sm:px-4">
+                      {d.group_code ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary" title={d.group_name || d.group_code}>
+                          {d.group_code}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground text-[10px] italic">Legacy</span>
+                      )}
                     </td>
                     <td className="py-3 px-3 sm:px-4 font-mono font-bold text-foreground">
                       ${Number(d.amount).toFixed(2)}
@@ -570,6 +610,13 @@ export default function ManageDonationsPage() {
               <div className="p-3 rounded-lg bg-background border border-border/50">
                 <span className="text-[11px] text-muted-foreground block">Donor Name</span>
                 <span className="font-semibold text-foreground mt-0.5 block">{viewDonation.donor_name}</span>
+              </div>
+
+              <div className="p-3 rounded-lg bg-background border border-border/50">
+                <span className="text-[11px] text-muted-foreground block">Receiving Group</span>
+                <span className="font-semibold text-foreground mt-0.5 block">
+                  {viewDonation.group_name ? `${viewDonation.group_name} (${viewDonation.group_code})` : 'Legacy / Unassigned'}
+                </span>
               </div>
 
               <div className="p-3 rounded-lg bg-background border border-border/50">
