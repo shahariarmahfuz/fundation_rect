@@ -112,6 +112,7 @@ def build_full_settings_out(setting: FoundationSetting, contrib: ContributionSet
         foundation_name=setting.foundation_name,
         foundation_short_name=setting.foundation_short_name,
         foundation_logo=setting.foundation_logo,
+        foundation_logo_public_id=setting.foundation_logo_public_id,
         tagline=setting.tagline,
         registration_number=setting.registration_number,
         email=setting.email,
@@ -161,6 +162,7 @@ def get_public_settings(db: Session = Depends(get_db)):
         foundation_name=setting.foundation_name,
         foundation_short_name=setting.foundation_short_name,
         foundation_logo=setting.foundation_logo,
+        foundation_logo_public_id=setting.foundation_logo_public_id,
         tagline=setting.tagline,
         app_display_name=setting.app_display_name,
         currency_code=setting.currency_code,
@@ -295,19 +297,49 @@ async def upload_foundation_logo(
             detail="File size exceeds maximum allowed size of 5MB."
         )
 
+    # Check if Cloudinary is configured; if so, upload to Cloudinary
+    from backend.app.config import settings as app_settings
+    from backend.app.services.cloudinary_service import upload_image, CloudinaryNotConfiguredError
+
+    setting = get_or_create_foundation_settings(db)
+
+    if app_settings.is_cloudinary_configured:
+        try:
+            cloud_res = upload_image(
+                file_bytes=contents,
+                filename=filename,
+                content_type=file.content_type,
+                purpose="foundation_logo",
+            )
+            setting.foundation_logo = cloud_res["secure_url"]
+            setting.foundation_logo_public_id = cloud_res["public_id"]
+            setting.updated_by_id = current_user.id
+            db.commit()
+            db.refresh(setting)
+            return {
+                "logo_url": cloud_res["secure_url"],
+                "public_id": cloud_res["public_id"],
+                "message": "Logo uploaded to Cloudinary successfully"
+            }
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Cloudinary upload failed: {str(e)}"
+            )
+
     unique_filename = f"foundation-logo-{uuid.uuid4().hex[:8]}{ext}"
     file_path = os.path.join(UPLOAD_DIR, unique_filename)
     with open(file_path, "wb") as f:
         f.write(contents)
 
     logo_url = f"/uploads/{unique_filename}"
-    setting = get_or_create_foundation_settings(db)
     setting.foundation_logo = logo_url
+    setting.foundation_logo_public_id = None
     setting.updated_by_id = current_user.id
     db.commit()
     db.refresh(setting)
 
-    return {"logo_url": logo_url, "message": "Logo uploaded successfully"}
+    return {"logo_url": logo_url, "public_id": None, "message": "Logo uploaded successfully"}
 
 # 9. Change Password (For authenticated user)
 @router.post("/change-password")

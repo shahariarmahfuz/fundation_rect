@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useSettings, FoundationSettings } from '@/lib/settings-context';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 type TabKey = 'foundation' | 'contributions' | 'financial' | 'ids' | 'organization' | 'security';
 
@@ -45,10 +46,6 @@ export default function SettingsPage() {
   // Form states initialized with settings
   const [formData, setFormData] = useState<FoundationSettings>(globalSettings);
   const initialDataRef = useRef<FoundationSettings>(globalSettings);
-
-  // Logo upload state
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Password change state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -149,52 +146,6 @@ export default function SettingsPage() {
     setPasswordError(null);
   };
 
-  // Logo upload handler
-  const handleLogoFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      setErrorMessage('Logo file size must be less than 5MB.');
-      return;
-    }
-
-    setUploadingLogo(true);
-    setErrorMessage(null);
-    try {
-      const form = new FormData();
-      form.append('file', file);
-
-      const res = await fetch('/api/settings/logo-upload', {
-        method: 'POST',
-        credentials: 'include',
-        body: form,
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setFormData(prev => ({ ...prev, foundation_logo: data.logo_url }));
-        initialDataRef.current = { ...initialDataRef.current, foundation_logo: data.logo_url };
-        await refreshSettings();
-        setSuccessMessage('Foundation logo updated successfully.');
-      } else {
-        const err = await res.json().catch(() => ({ detail: 'Failed to upload logo' }));
-        setErrorMessage(err.detail || 'Failed to upload logo.');
-      }
-    } catch {
-      setErrorMessage('Network error while uploading logo.');
-    } finally {
-      setUploadingLogo(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
-  const handleRemoveLogo = async () => {
-    if (!window.confirm('Are you sure you want to remove the foundation logo?')) return;
-    setFormData(prev => ({ ...prev, foundation_logo: null }));
-    setIsDirty(true);
-  };
-
   // Save current tab changes
   const handleSaveTab = async (tab: TabKey) => {
     setSaving(true);
@@ -210,6 +161,7 @@ export default function SettingsPage() {
         foundation_name: formData.foundation_name,
         foundation_short_name: formData.foundation_short_name,
         foundation_logo: formData.foundation_logo,
+        foundation_logo_public_id: formData.foundation_logo_public_id,
         tagline: formData.tagline,
         registration_number: formData.registration_number,
         email: formData.email,
@@ -506,61 +458,33 @@ export default function SettingsPage() {
                     </p>
                   </div>
 
-                  {/* Logo Section */}
-                  <div className="p-4 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-border/50 flex flex-col sm:flex-row items-center gap-4">
-                    <div className="w-20 h-20 rounded-xl border-2 border-dashed border-border flex items-center justify-center bg-card shrink-0 overflow-hidden relative group">
-                      {formData.foundation_logo ? (
-                        <img 
-                          src={formData.foundation_logo} 
-                          alt="Foundation Logo" 
-                          className="w-full h-full object-contain p-1"
-                        />
-                      ) : (
-                        <Building2 className="w-8 h-8 text-muted-foreground/40" />
-                      )}
-                    </div>
-
-                    <div className="flex-1 min-w-0 text-center sm:text-left space-y-1.5">
-                      <span className="text-xs font-semibold text-foreground block">Foundation Logo</span>
-                      <p className="text-[11px] text-muted-foreground">
-                        Supported: PNG, JPG, SVG, WebP. Recommended square or landscape format. Max 5MB.
-                      </p>
-                      <div className="flex items-center justify-center sm:justify-start gap-2 pt-1">
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          onChange={handleLogoFileSelect}
-                          accept=".png,.jpg,.jpeg,.svg,.webp"
-                          className="hidden"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          disabled={uploadingLogo || !canUpdateActiveTab}
-                          className="px-3 py-1.5 rounded-lg border border-border bg-card text-xs font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
-                        >
-                          {uploadingLogo ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Upload className="w-3.5 h-3.5" />
-                          )}
-                          <span>Upload Logo</span>
-                        </button>
-
-                        {formData.foundation_logo && (
-                          <button
-                            type="button"
-                            onClick={handleRemoveLogo}
-                            disabled={!canUpdateActiveTab}
-                            className="px-3 py-1.5 rounded-lg border border-destructive/20 text-destructive bg-destructive/5 text-xs font-medium hover:bg-destructive/10 transition-colors flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            <span>Remove</span>
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  {/* Reusable Cloudinary Image Upload */}
+                  <ImageUpload
+                    label="Foundation Branding Logo"
+                    description="Supported formats: JPEG, PNG, WebP, SVG. Recommended square or landscape format. Max 5MB."
+                    value={formData.foundation_logo}
+                    publicId={formData.foundation_logo_public_id}
+                    onChange={(url, publicId) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        foundation_logo: url,
+                        foundation_logo_public_id: publicId || null,
+                      }));
+                      setIsDirty(true);
+                    }}
+                    onRemove={() => {
+                      setFormData(prev => ({
+                        ...prev,
+                        foundation_logo: null,
+                        foundation_logo_public_id: null,
+                      }));
+                      setIsDirty(true);
+                    }}
+                    purpose="foundation_logo"
+                    maxSizeMB={5}
+                    disabled={!canUpdateActiveTab}
+                    aspectRatio="square"
+                  />
 
                   {/* Form fields */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

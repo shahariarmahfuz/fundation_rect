@@ -334,6 +334,7 @@ class FoundationSetting(Base):
     foundation_name = Column(String(255), default="Al-Barakah Welfare Foundation", nullable=False)
     foundation_short_name = Column(String(50), default="ABWF", nullable=True)
     foundation_logo = Column(Text, nullable=True)  # URL or base64 data URI
+    foundation_logo_public_id = Column(String(255), nullable=True)
     tagline = Column(String(255), default="Empowering Communities, Transforming Lives", nullable=True)
     registration_number = Column(String(100), default="REG-2024-8971B", nullable=True)
     email = Column(String(255), default="info@albarakah-foundation.org", nullable=True)
@@ -423,4 +424,37 @@ class ContributionMonthAllocation(Base):
 
     contribution = relationship("MemberContributionReceipt", back_populates="month_allocations")
     member = relationship("Member")
+
+class MediaAsset(Base):
+    __tablename__ = "media_assets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    public_id = Column(String(255), unique=True, nullable=False, index=True)
+    secure_url = Column(String(1000), nullable=False)
+    folder = Column(String(255), nullable=False)
+    format = Column(String(50), nullable=False)
+    bytes = Column(Integer, nullable=False)
+    width = Column(Integer, nullable=True)
+    height = Column(Integer, nullable=True)
+    purpose = Column(String(50), default="general", nullable=False, index=True)
+    uploaded_by_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    uploaded_by = relationship("User")
+
+class FoundationPost(Base):
+    __tablename__ = "foundation_posts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(255), nullable=False)
+    content = Column(Text, nullable=False)
+    featured_image_url = Column(String(1000), nullable=True)
+    featured_image_public_id = Column(String(255), nullable=True)
+    status = Column(String(50), default="draft", nullable=False, index=True)  # draft, published, archived
+    created_by_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    created_by = relationship("User")
+
 

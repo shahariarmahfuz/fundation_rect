@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from fastapi.staticfiles import StaticFiles
-from backend.app.routers import auth, groups, members, beneficiaries, donations, sadaqah, qard_hasan, contributions, settings
+from backend.app.routers import auth, groups, members, beneficiaries, donations, sadaqah, qard_hasan, contributions, settings, media, posts
 
 app = FastAPI(
     title="Foundation Management System API",
@@ -32,6 +32,8 @@ app.include_router(sadaqah.router)
 app.include_router(qard_hasan.router)
 app.include_router(contributions.router)
 app.include_router(settings.router)
+app.include_router(media.router)
+app.include_router(posts.router)
 
 @app.get("/api/health")
 def health_check():

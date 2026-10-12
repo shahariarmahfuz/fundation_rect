@@ -154,42 +154,70 @@ export const bottomNavItems: NavItemData[] = [
 
 export const mockBottomItems = bottomNavItems;
 
+function hasActiveChild(item: NavItemData, activeId: string, pathname: string): boolean {
+  if (!item.children || item.children.length === 0) return false;
+  return item.children.some(child => 
+    child.id === activeId || 
+    (child.href && (pathname === child.href || activeId === child.href)) || 
+    hasActiveChild(child, activeId, pathname)
+  );
+}
+
 function NavItem({ 
   item, 
   activeId, 
   onSelect,
-  level = 0
+  level = 0,
+  isMobile = false
 }: { 
   item: NavItemData; 
   activeId: string; 
   onSelect: (id: string, href?: string) => void;
   level?: number;
+  isMobile?: boolean;
 }) {
   const pathname = usePathname();
   const isActive = activeId === item.id || (item.href && (pathname === item.href || activeId === item.href));
   const hasChildren = !!(item.children && item.children.length > 0);
-  const [isOpen, setIsOpen] = useState(true);
+  const isChildActive = hasChildren && hasActiveChild(item, activeId, pathname);
+
+  // Requirement: All collapsible parent menus must be collapsed by default when the mobile sidebar opens for the first time.
+  // Expand only the active-route parent menu if needed to reveal the current page.
+  // Desktop preserves open default.
+  const [isOpen, setIsOpen] = useState<boolean>(() => {
+    if (isMobile) {
+      return Boolean(isChildActive);
+    }
+    return true;
+  });
+
+  // When active route changes on mobile, open the active parent if needed
+  useEffect(() => {
+    if (isMobile && isChildActive) {
+      setIsOpen(true);
+    }
+  }, [isMobile, isChildActive]);
 
   const handleClick = (e: React.MouseEvent) => {
     if (hasChildren) {
       e.preventDefault();
-      setIsOpen(!isOpen);
+      e.stopPropagation();
+      setIsOpen(prev => !prev);
     } else {
       onSelect(item.id, item.href);
     }
   };
 
-  const navContent = (
-    <div 
-      className={`group flex items-center justify-between px-2.5 py-[7px] rounded-[6px] cursor-pointer transition-all duration-200 select-none
-        ${isActive 
-          ? 'bg-black/5 dark:bg-white/10 text-foreground font-medium' 
-          : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground/90'
-        }
-      `}
-      style={{ paddingLeft: `${level * 12 + 10}px` }}
-      onClick={handleClick}
-    >
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (hasChildren && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsOpen(prev => !prev);
+    }
+  };
+
+  const innerContent = (
+    <>
       <div className="flex items-center gap-2.5 min-w-0">
         <item.icon 
           className={`w-[16px] h-[16px] shrink-0 transition-colors
@@ -216,10 +244,42 @@ function NavItem({
         {hasChildren && (
           <ChevronRight 
             className={`w-3.5 h-3.5 text-muted-foreground/50 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} 
-            strokeWidth={2}
+            strokeWidth={2} 
           />
         )}
       </div>
+    </>
+  );
+
+  const navContent = hasChildren ? (
+    <button
+      type="button"
+      aria-expanded={isOpen}
+      aria-controls={`submenu-${item.id}`}
+      className={`group w-full flex items-center justify-between px-2.5 py-[7px] rounded-[6px] cursor-pointer transition-all duration-200 select-none text-left
+        ${isActive 
+          ? 'bg-black/5 dark:bg-white/10 text-foreground font-medium' 
+          : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground/90'
+        }
+      `}
+      style={{ paddingLeft: `${level * 12 + 10}px` }}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+    >
+      {innerContent}
+    </button>
+  ) : (
+    <div 
+      className={`group flex items-center justify-between px-2.5 py-[7px] rounded-[6px] cursor-pointer transition-all duration-200 select-none
+        ${isActive 
+          ? 'bg-black/5 dark:bg-white/10 text-foreground font-medium' 
+          : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground/90'
+        }
+      `}
+      style={{ paddingLeft: `${level * 12 + 10}px` }}
+      onClick={handleClick}
+    >
+      {innerContent}
     </div>
   );
 
@@ -239,6 +299,9 @@ function NavItem({
 
       {hasChildren && (
         <div 
+          id={`submenu-${item.id}`}
+          role="region"
+          aria-label={`${item.title} submenu`}
           className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
             isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
           }`}
@@ -254,7 +317,8 @@ function NavItem({
                 item={child} 
                 activeId={activeId} 
                 onSelect={onSelect} 
-                level={level + 1} 
+                level={level + 1}
+                isMobile={isMobile}
               />
             ))}
           </div>
@@ -271,7 +335,8 @@ export function SidebarNav({
   activeWorkspace,
   onWorkspaceSelect,
   customNavGroups,
-  onItemClick
+  onItemClick,
+  isMobile
 }: { 
   className?: string,
   activeId?: string,
@@ -279,7 +344,8 @@ export function SidebarNav({
   activeWorkspace?: string,
   onWorkspaceSelect?: (ws: string) => void,
   customNavGroups?: NavGroupData[],
-  onItemClick?: () => void
+  onItemClick?: () => void,
+  isMobile?: boolean
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -355,6 +421,15 @@ export function SidebarNav({
     .map(filterItem)
     .filter((i): i is NavItemData => i !== null);
 
+  const [windowIsMobile, setWindowIsMobile] = useState<boolean>(false);
+  useEffect(() => {
+    const checkMobile = () => setWindowIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  const effectiveIsMobile = isMobile !== undefined ? isMobile : windowIsMobile;
+
   return (
     <div className={`flex flex-col w-full h-full bg-card/50 border-r border-border/50 p-3 font-sans max-w-full min-w-0 ${className}`}>
       {/* Scrollable navigation area */}
@@ -372,6 +447,7 @@ export function SidebarNav({
                 item={item} 
                 activeId={currentId} 
                 onSelect={handleSelect} 
+                isMobile={effectiveIsMobile}
               />
             ))}
           </div>
@@ -387,6 +463,7 @@ export function SidebarNav({
               item={item} 
               activeId={currentId} 
               onSelect={handleSelect} 
+              isMobile={effectiveIsMobile}
             />
           ))}
         </div>

@@ -62,6 +62,13 @@ PERMISSIONS = [
     ("settings.organization.update", "Update organization and system preferences", "settings"),
     ("settings.ids.update", "Update entity ID prefixes and default statuses", "settings"),
     ("settings.security.view", "View security configuration and manage credentials", "settings"),
+    # Media and Cloudinary permissions
+    ("media.upload", "Upload images and media assets to cloud storage", "media"),
+    ("media.delete", "Delete uploaded images and media assets", "media"),
+    # Foundation Posts permissions
+    ("foundation_posts.view", "View foundation posts and announcements", "posts"),
+    ("foundation_posts.create", "Create foundation posts and announcements", "posts"),
+    ("foundation_posts.update", "Update foundation posts and announcements", "posts"),
 ]
 
 def seed_database():

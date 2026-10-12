@@ -20,6 +20,7 @@ export interface FoundationSettings {
   foundation_name: string;
   foundation_short_name?: string | null;
   foundation_logo?: string | null;
+  foundation_logo_public_id?: string | null;
   tagline?: string | null;
   registration_number?: string | null;
   email?: string | null;
@@ -69,6 +70,7 @@ const DEFAULT_SETTINGS: FoundationSettings = {
   foundation_name: 'Al-Barakah Welfare Foundation',
   foundation_short_name: 'ABWF',
   foundation_logo: null,
+  foundation_logo_public_id: null,
   tagline: 'Empowering Communities, Transforming Lives',
   country: 'Bangladesh',
   currency_code: 'BDT',

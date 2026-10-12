@@ -673,6 +673,7 @@ class PublicSettingsOut(BaseModel):
     foundation_name: str
     foundation_short_name: Optional[str] = None
     foundation_logo: Optional[str] = None
+    foundation_logo_public_id: Optional[str] = None
     tagline: Optional[str] = None
     app_display_name: str
     currency_code: str
@@ -687,6 +688,7 @@ class FoundationProfileUpdate(BaseModel):
     foundation_name: str = Field(..., min_length=1, max_length=255)
     foundation_short_name: Optional[str] = Field(None, max_length=50)
     foundation_logo: Optional[str] = None
+    foundation_logo_public_id: Optional[str] = None
     tagline: Optional[str] = Field(None, max_length=255)
     registration_number: Optional[str] = Field(None, max_length=100)
     email: Optional[str] = Field(None, max_length=255)
@@ -743,6 +745,7 @@ class FullSettingsOut(BaseModel):
     foundation_name: str
     foundation_short_name: Optional[str] = None
     foundation_logo: Optional[str] = None
+    foundation_logo_public_id: Optional[str] = None
     tagline: Optional[str] = None
     registration_number: Optional[str] = None
     email: Optional[str] = None
@@ -789,5 +792,76 @@ class FullSettingsOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+# ==========================================
+# Media & Cloudinary Schemas
+# ==========================================
+
+class MediaUploadOut(BaseModel):
+    public_id: str
+    secure_url: str
+    format: str
+    bytes: int
+    width: Optional[int] = None
+    height: Optional[int] = None
+    folder: str
+    purpose: str
+
+    class Config:
+        from_attributes = True
+
+class MediaAssetOut(BaseModel):
+    id: int
+    public_id: str
+    secure_url: str
+    folder: str
+    format: str
+    bytes: int
+    width: Optional[int] = None
+    height: Optional[int] = None
+    purpose: str
+    uploaded_by_id: Optional[int] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class MediaStatusOut(BaseModel):
+    configured: bool
+    cloud_name: Optional[str] = None
+
+# ==========================================
+# Foundation Posts Schemas
+# ==========================================
+
+class FoundationPostCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=255)
+    content: str = Field(..., min_length=1)
+    featured_image_url: Optional[str] = None
+    featured_image_public_id: Optional[str] = None
+    status: Optional[str] = Field("draft", pattern="^(draft|published|archived)$")
+
+class FoundationPostUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=255)
+    content: Optional[str] = Field(None, min_length=1)
+    featured_image_url: Optional[str] = None
+    featured_image_public_id: Optional[str] = None
+    status: Optional[str] = Field(None, pattern="^(draft|published|archived)$")
+
+class FoundationPostOut(BaseModel):
+    id: int
+    title: str
+    content: str
+    featured_image_url: Optional[str] = None
+    featured_image_public_id: Optional[str] = None
+    status: str
+    created_by_id: Optional[int] = None
+    created_by_name: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
 
 

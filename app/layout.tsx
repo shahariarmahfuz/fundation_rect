@@ -118,6 +118,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         </div>
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
           <SidebarNav
+            isMobile={true}
             className="w-full border-none bg-transparent"
             onItemClick={() => setMobileDrawerOpen(false)}
           />
@@ -130,7 +131,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
           desktopSidebarOpen ? 'w-[260px]' : 'w-0 overflow-hidden border-none'
         }`}
       >
-        <SidebarNav className="w-[260px] border-none bg-transparent" />
+        <SidebarNav isMobile={false} className="w-[260px] border-none bg-transparent" />
       </aside>
 
       {/* Main Content Area */}
