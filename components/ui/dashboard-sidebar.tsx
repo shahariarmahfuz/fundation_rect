@@ -16,14 +16,11 @@ import {
   ReceiptText,
   BarChart3,
   ShieldCheck, 
-  Settings, 
-  LogOut,
   Hash,
   Wallet,
   ClipboardList,
   BookOpenText,
   Landmark,
-  ChevronDown,
   ChevronRight,
   Inbox,
   Calendar,
@@ -38,7 +35,6 @@ import {
   X
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import { useSettings } from '@/lib/settings-context';
 
 export type NavItemData = {
   id: string;
@@ -144,126 +140,10 @@ export const foundationNavGroups: NavGroupData[] = [
         icon: ShieldCheck,
         href: '/roles',
         permission: 'roles.manage',
-      },
-      {
-        id: 'settings-parent',
-        title: 'Settings',
-        icon: Settings,
-        href: '/settings',
-        permission: 'settings.view',
       }
     ]
   }
 ];
-
-export const mockBottomItems: NavItemData[] = [
-  { id: 'settings', title: 'Settings', icon: Settings, href: '/settings', permission: 'settings.view', shortcut: '⌘,' },
-  { id: 'logout', title: 'Log out', icon: LogOut },
-];
-
-export function UserProfileMenu({ selected, onSelect }: { selected?: string; onSelect?: (ws: string) => void }) {
-  const [isOpen, setIsOpen] = useState(false);
-  let authContext: any = null;
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    authContext = useAuth();
-  } catch (e) {
-    // Auth context optional if rendered standalone
-  }
-
-  const user = authContext?.user;
-  const fullName = user?.full_name || selected || 'Foundation User';
-  const roleName = user?.role_name || 'Member';
-  const initial = (fullName.trim().charAt(0) || 'U').toUpperCase();
-
-  return (
-    <div className="relative mb-3">
-      <div 
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between px-2 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors select-none group border border-transparent hover:border-border/40"
-        title={fullName}
-      >
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-[6px] bg-primary text-primary-foreground flex items-center justify-center font-semibold text-[13px] shadow-xs shrink-0">
-            {initial}
-          </div>
-          <div className="flex flex-col min-w-0 overflow-hidden">
-            <span className="text-[13px] font-medium leading-none mb-1 text-foreground truncate max-w-[150px]">
-              {fullName}
-            </span>
-            <span className="text-[11px] text-muted-foreground leading-none truncate max-w-[150px]">
-              {roleName}
-            </span>
-          </div>
-        </div>
-        <ChevronDown className="w-4 h-4 text-muted-foreground/50 group-hover:text-foreground/70 transition-colors shrink-0 ml-1" strokeWidth={1.5} />
-      </div>
-
-      {isOpen && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-[48px] left-0 w-full bg-card border border-border/50 rounded-lg shadow-xl z-50 py-2 px-1 flex flex-col gap-1 animate-in fade-in zoom-in-95 duration-100">
-            <div className="px-2.5 py-1.5 flex flex-col">
-              <span className="text-[12px] font-semibold text-foreground truncate">{fullName}</span>
-              {user?.email && (
-                <span className="text-[11px] text-muted-foreground truncate">{user.email}</span>
-              )}
-              <div className="mt-1 flex items-center gap-1.5">
-                <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-medium truncate">
-                  {roleName}
-                </span>
-                {user?.username && (
-                  <span className="text-[10px] text-muted-foreground truncate font-mono">
-                    @{user.username}
-                  </span>
-                )}
-              </div>
-            </div>
-            {authContext?.hasPermission?.('roles.manage') && (
-              <>
-                <div className="h-px bg-border/50 my-1 mx-1" />
-                <Link
-                  href="/roles"
-                  onClick={() => setIsOpen(false)}
-                  className="px-2.5 py-1.5 text-[12px] text-foreground/80 hover:bg-black/5 dark:hover:bg-white/5 rounded-md cursor-pointer transition-colors flex items-center gap-2"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-muted-foreground" strokeWidth={1.5} />
-                  <span>Role Permissions</span>
-                </Link>
-              </>
-            )}
-            {authContext?.hasPermission?.('settings.view') && (
-              <>
-                <div className="h-px bg-border/50 my-1 mx-1" />
-                <Link
-                  href="/settings"
-                  onClick={() => setIsOpen(false)}
-                  className="px-2.5 py-1.5 text-[12px] text-foreground/80 hover:bg-black/5 dark:hover:bg-white/5 rounded-md cursor-pointer transition-colors flex items-center gap-2"
-                >
-                  <Settings className="w-3.5 h-3.5 text-muted-foreground" strokeWidth={1.5} />
-                  <span>Settings</span>
-                </Link>
-              </>
-            )}
-            <div className="h-px bg-border/50 my-1 mx-1" />
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                authContext?.logout?.();
-              }}
-              className="w-full text-left px-2.5 py-1.5 text-[12px] text-destructive hover:bg-destructive/10 rounded-md cursor-pointer transition-colors flex items-center gap-2"
-            >
-              <LogOut className="w-3.5 h-3.5 text-destructive" strokeWidth={1.5} />
-              <span>Log out</span>
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-export const WorkspaceSwitcher = UserProfileMenu;
 
 function NavItem({ 
   item, 
@@ -455,42 +335,9 @@ export function SidebarNav({
     items: group.items.map(filterItem).filter((i): i is NavItemData => i !== null)
   })).filter(group => group.items.length > 0);
 
-  let settingsContext: any = null;
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    settingsContext = useSettings();
-  } catch (e) {}
-
-  const foundationName = settingsContext?.foundationName || 'Al-Barakah Welfare Foundation';
-  const foundationShortName = settingsContext?.foundationShortName || 'ABWF';
-  const foundationLogo = settingsContext?.foundationLogo;
-
   return (
     <div className={`flex flex-col w-full h-full bg-card/50 border-r border-border/50 p-3 font-sans max-w-full min-w-0 ${className}`}>
-      {/* Foundation Brand Header */}
-      <div className="flex items-center gap-2.5 px-2.5 py-2 mb-2 rounded-lg bg-black/[0.02] dark:bg-white/[0.02] border border-border/40 shrink-0">
-        {foundationLogo ? (
-          <img src={foundationLogo} alt={foundationName} className="w-7 h-7 object-contain rounded shrink-0" />
-        ) : (
-          <div className="w-7 h-7 rounded-md bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0 border border-primary/20">
-            {foundationShortName ? foundationShortName.slice(0, 2) : 'AB'}
-          </div>
-        )}
-        <div className="flex flex-col min-w-0 overflow-hidden">
-          <span className="text-[13px] font-semibold text-foreground truncate leading-tight">
-            {foundationName}
-          </span>
-          {foundationShortName && (
-            <span className="text-[10px] text-muted-foreground truncate leading-tight font-mono">
-              {foundationShortName}
-            </span>
-          )}
-        </div>
-      </div>
-
-      <UserProfileMenu selected={activeWorkspace} onSelect={onWorkspaceSelect} />
-
-      <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col gap-4 mt-2">
+      <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col gap-4">
         {filteredGroups.map((group, idx) => (
           <div key={idx} className="flex flex-col gap-0.5">
             {group.heading && (
@@ -509,22 +356,11 @@ export function SidebarNav({
           </div>
         ))}
       </div>
-
-      <div className="mt-2 pt-3 border-t border-border/50 flex flex-col gap-0.5">
-        {mockBottomItems.map(item => (
-          <NavItem 
-            key={item.id} 
-            item={item} 
-            activeId={currentId} 
-            onSelect={handleSelect} 
-          />
-        ))}
-      </div>
     </div>
   );
 }
 
-const allItems = [...foundationNavGroups.flatMap(g => g.items), ...mockBottomItems];
+const allItems = foundationNavGroups.flatMap(g => g.items);
 const flattenItems = (items: NavItemData[]): NavItemData[] => {
   return items.reduce((acc, item) => {
     acc.push(item);
@@ -558,8 +394,6 @@ export default function SidebarNavPreview() {
             className="w-[260px] border-none bg-transparent" 
             activeId={activeId}
             onSelect={handleSelect}
-            activeWorkspace={activeWorkspace}
-            onWorkspaceSelect={setActiveWorkspace}
           />
         </div>
         

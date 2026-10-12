@@ -2,16 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import './globals.css';
+import Link from 'next/link';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
 import { SettingsProvider, useSettings } from '@/lib/settings-context';
 import { SidebarNav } from '@/components/ui/dashboard-sidebar';
-import { PanelLeftClose, PanelLeftOpen, Menu, X, LogOut, Loader2 } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, Menu, X, LogOut, Loader2, ChevronDown, ShieldCheck, Settings } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 
 function DashboardShell({ children }: { children: React.ReactNode }) {
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-  const { user, loading, logout } = useAuth();
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const { user, loading, logout, hasPermission } = useAuth();
   const { appDisplayName, foundationName, foundationLogo } = useSettings();
   const pathname = usePathname();
   const router = useRouter();
@@ -29,16 +31,18 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
     }
   }, [loading, user, pathname, router]);
 
-  // Close mobile drawer when path changes
+  // Close mobile drawer and profile dropdown when path changes
   useEffect(() => {
     setMobileDrawerOpen(false);
+    setProfileDropdownOpen(false);
   }, [pathname]);
 
-  // Close drawer on Escape key
+  // Close drawer and profile dropdown on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setMobileDrawerOpen(false);
+        setProfileDropdownOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -89,10 +93,11 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
       {/* Mobile Drawer (Slide-in) */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw] h-full bg-card shadow-2xl md:hidden transform transition-transform duration-300 ease-in-out flex flex-col ${
-          mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw] h-full bg-card shadow-2xl md:hidden transform transition-all duration-300 ease-in-out flex flex-col ${
+          mobileDrawerOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0 pointer-events-none invisible'
         }`}
         aria-label="Mobile Navigation Drawer"
+        aria-hidden={!mobileDrawerOpen}
       >
         <div className="flex items-center justify-between p-3 border-b border-border/50 shrink-0">
           <div className="flex items-center gap-2 min-w-0">
@@ -163,47 +168,111 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            {/* Desktop Authenticated User Display */}
-            <div className="hidden sm:flex items-center gap-3 shrink-0">
-              <div className="flex flex-col items-end text-xs min-w-0">
-                <span className="font-medium text-foreground leading-tight truncate max-w-[160px]">
-                  {user.full_name}
-                </span>
-                <span className="text-[11px] text-muted-foreground leading-tight truncate max-w-[160px]">
+            {/* Header User Profile Menu */}
+            <div className="relative shrink-0">
+              <button
+                onClick={() => setProfileDropdownOpen(prev => !prev)}
+                className="flex items-center gap-2 sm:gap-2.5 p-1 sm:px-2.5 sm:py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer select-none border border-transparent hover:border-border/40 focus:outline-hidden"
+                aria-label="User profile menu"
+                aria-expanded={profileDropdownOpen}
+                title={user.full_name}
+              >
+                {/* Desktop: name & role */}
+                <div className="hidden sm:flex flex-col items-end text-xs min-w-0">
+                  <span className="font-medium text-foreground leading-tight truncate max-w-[150px]">
+                    {user.full_name}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground leading-tight truncate max-w-[150px]">
+                    {user.role_name || 'Member'}
+                  </span>
+                </div>
+
+                {/* Mobile: compact role badge */}
+                <span className="sm:hidden text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary truncate max-w-[80px]">
                   {user.role_name || 'Member'}
                 </span>
-              </div>
 
-              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-semibold text-xs shadow-xs shrink-0">
-                {userInitial}
-              </div>
+                {/* Avatar / Initial circle */}
+                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-semibold text-xs shadow-xs shrink-0">
+                  {userInitial}
+                </div>
 
-              <button
-                onClick={logout}
-                title="Log out"
-                className="p-1.5 rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0 cursor-pointer ml-1"
-                aria-label="Log out"
-              >
-                <LogOut className="w-4 h-4" strokeWidth={1.5} />
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-muted-foreground/60 transition-transform duration-200 ${
+                    profileDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                  strokeWidth={1.5}
+                />
               </button>
-            </div>
 
-            {/* Mobile Compact User Indicator & Logout */}
-            <div className="flex sm:hidden items-center gap-2 shrink-0">
-              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary truncate max-w-[90px]">
-                {user.role_name || 'Member'}
-              </span>
-              <div className="w-7 h-7 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-semibold text-[11px] shadow-xs shrink-0">
-                {userInitial}
-              </div>
-              <button
-                onClick={logout}
-                title="Log out"
-                className="p-1 rounded text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0 cursor-pointer"
-                aria-label="Log out"
-              >
-                <LogOut className="w-4 h-4" strokeWidth={1.5} />
-              </button>
+              {/* Profile Dropdown Menu */}
+              {profileDropdownOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setProfileDropdownOpen(false)}
+                    aria-hidden="true"
+                  />
+                  <div className="absolute right-0 top-full mt-1.5 w-60 sm:w-64 max-w-[calc(100vw-1.5rem)] bg-card border border-border/60 rounded-xl shadow-xl z-50 py-2 px-1 flex flex-col gap-1 animate-in fade-in zoom-in-95 duration-100">
+                    <div className="px-3 py-2 flex flex-col">
+                      <span className="text-[13px] font-semibold text-foreground truncate">{user.full_name}</span>
+                      {user.email && (
+                        <span className="text-[11px] text-muted-foreground truncate">{user.email}</span>
+                      )}
+                      <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                        <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-medium truncate">
+                          {user.role_name || 'Member'}
+                        </span>
+                        {user.username && (
+                          <span className="text-[10px] text-muted-foreground truncate font-mono">
+                            @{user.username}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {hasPermission('roles.manage') && (
+                      <>
+                        <div className="h-px bg-border/50 my-1 mx-1" />
+                        <Link
+                          href="/roles"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="px-3 py-2 text-[12px] text-foreground/85 hover:bg-black/5 dark:hover:bg-white/5 rounded-md cursor-pointer transition-colors flex items-center gap-2.5"
+                        >
+                          <ShieldCheck className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                          <span>Role Permissions</span>
+                        </Link>
+                      </>
+                    )}
+
+                    {hasPermission('settings.view') && (
+                      <>
+                        <div className="h-px bg-border/50 my-1 mx-1" />
+                        <Link
+                          href="/settings"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="px-3 py-2 text-[12px] text-foreground/85 hover:bg-black/5 dark:hover:bg-white/5 rounded-md cursor-pointer transition-colors flex items-center gap-2.5"
+                        >
+                          <Settings className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                          <span>Settings</span>
+                        </Link>
+                      </>
+                    )}
+
+                    <div className="h-px bg-border/50 my-1 mx-1" />
+                    <button
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        logout();
+                      }}
+                      className="w-full text-left px-3 py-2 text-[12px] text-destructive hover:bg-destructive/10 rounded-md cursor-pointer transition-colors flex items-center gap-2.5"
+                    >
+                      <LogOut className="w-4 h-4 text-destructive" strokeWidth={1.5} />
+                      <span>Log out</span>
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </header>
