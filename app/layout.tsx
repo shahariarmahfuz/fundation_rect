@@ -116,7 +116,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
             <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
           <SidebarNav
             className="w-full border-none bg-transparent"
             onItemClick={() => setMobileDrawerOpen(false)}

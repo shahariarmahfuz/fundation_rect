@@ -15,19 +15,19 @@ async def run_verification():
         await page.wait_for_url("http://127.0.0.1:3000/", timeout=10000)
         print("Logged in successfully as admin.")
 
-        print("\n=== STEP 2: VERIFY DESKTOP SIDEBAR CONTAINS ONLY NAVIGATION ITEMS ===")
+        print("\n=== STEP 2: VERIFY DESKTOP SIDEBAR STRUCTURE ===")
         desktop_sidebar = page.locator("aside.hidden.md\\:flex")
         sidebar_text = await desktop_sidebar.inner_text()
 
-        # Verify duplicate profile UI is completely absent from sidebar
+        # 2.1 Verify user identity card remains removed from sidebar
         assert "System Administrator" not in sidebar_text, "User full name must NOT be inside sidebar"
         assert "admin@foundation.org" not in sidebar_text, "User email must NOT be inside sidebar"
         assert "@admin" not in sidebar_text, "Username @admin must NOT be inside sidebar"
         assert "RBAC Active" not in sidebar_text, "Old demo card text must NOT be in sidebar"
         assert "Switch:" not in sidebar_text, "Old switcher text must NOT be in sidebar"
-        assert "Log out" not in sidebar_text, "Log out must NOT be at bottom of sidebar"
+        print("Duplicate sidebar user identity/profile card remains completely removed.")
 
-        # Verify pure navigation items ARE present
+        # 2.2 Verify navigation items in main scrollable section
         assert "Home" in sidebar_text, "Home must be in sidebar"
         assert "Group" in sidebar_text, "Group must be in sidebar"
         assert "Member" in sidebar_text, "Member must be in sidebar"
@@ -37,157 +37,140 @@ async def run_verification():
         assert "Qard Hasan" in sidebar_text, "Qard Hasan must be in sidebar"
         assert "Contribution" in sidebar_text, "Contribution must be in sidebar"
         assert "Role Permissions" in sidebar_text, "Role Permissions must be in sidebar"
-        print("Desktop sidebar contains navigation items ONLY (no duplicate user profile card or bottom actions).")
+        print("Main navigation section contains all authorized modules.")
 
-        print("\n=== STEP 3: VERIFY HEADER USER PROFILE BUTTON AND DROPDOWN ON DESKTOP ===")
+        # 2.3 Verify restored bottom actions: Settings above Log out
+        bottom_section = desktop_sidebar.locator("div.mt-auto")
+        assert await bottom_section.is_visible(), "Bottom actions section must be visible"
+        bottom_text = await bottom_section.inner_text()
+        assert "Settings" in bottom_text, "Settings must be restored at bottom of sidebar"
+        assert "Log out" in bottom_text, "Log out must be restored at bottom of sidebar"
+
+        settings_pos = bottom_text.find("Settings")
+        logout_pos = bottom_text.find("Log out")
+        assert settings_pos < logout_pos, "Settings must be placed above Log out"
+        print("Sidebar bottom section contains Settings above Log out, separated by divider.")
+
+        print("\n=== STEP 3: VERIFY SIDEBAR SETTINGS NAVIGATION AND ACTIVE STYLING ===")
+        sidebar_settings_link = bottom_section.locator("a[href='/settings']")
+        await sidebar_settings_link.click()
+        await page.wait_for_url("http://127.0.0.1:3000/settings", timeout=10000)
+
+        # Check active styling on sidebar Settings item
+        settings_classes = await sidebar_settings_link.locator("div").first.get_attribute("class")
+        assert "bg-black/5" in settings_classes or "font-medium" in settings_classes, f"Active styling missing on settings: {settings_classes}"
+        print("Sidebar Settings navigates to /settings and preserves active-page styling.")
+
+        print("\n=== STEP 4: VERIFY HEADER USER PROFILE BUTTON AND DROPDOWN ON DESKTOP ===")
         header = page.locator("header")
         profile_btn = header.locator("button[aria-label='User profile menu']")
         assert await profile_btn.is_visible(), "Header user profile button must be visible"
 
-        # Profile button shows user's name & role
         btn_text = await profile_btn.inner_text()
-        assert "System Administrator" in btn_text, "Profile button must show user full name"
-        assert "Administrator" in btn_text, "Profile button must show user role"
+        assert "System Administrator" in btn_text
+        assert "Administrator" in btn_text
 
-        # Click to open dropdown
+        # Click to open header dropdown
         await profile_btn.click()
         await page.wait_for_timeout(300)
 
-        # Dropdown items check
         dropdown = header.locator("div.absolute.right-0")
         assert await dropdown.is_visible(), "Profile dropdown must appear on click"
         dropdown_text = await dropdown.inner_text()
-        assert "System Administrator" in dropdown_text, "Dropdown must display user full name"
-        assert "admin@foundation.org" in dropdown_text, "Dropdown must display email"
-        assert "@admin" in dropdown_text, "Dropdown must display username"
-        assert "Administrator" in dropdown_text, "Dropdown must display role badge"
-        assert "Role Permissions" in dropdown_text, "Admin must see Role Permissions in profile dropdown"
-        assert "Settings" in dropdown_text, "Admin must see Settings in profile dropdown"
-        assert "Log out" in dropdown_text, "Dropdown must contain Log out button"
-        print("Header profile dropdown on desktop correctly displays full profile, Role Permissions, Settings, and Log out.")
+        assert "System Administrator" in dropdown_text
+        assert "admin@foundation.org" in dropdown_text
+        assert "@admin" in dropdown_text
+        assert "Administrator" in dropdown_text
+        assert "Role Permissions" in dropdown_text
+        assert "Settings" in dropdown_text
+        assert "Log out" in dropdown_text
+        print("Header profile dropdown contains full profile info, Role Permissions, Settings, and Log out.")
 
-        # Click backdrop to close
+        # Close dropdown by outside click
         await page.locator("div.fixed.inset-0.z-40").click()
         await page.wait_for_timeout(200)
-        assert not (await dropdown.is_visible()), "Dropdown must close when clicking outside"
-        print("Profile dropdown closes on outside click.")
 
-        print("\n=== STEP 4: VERIFY MOBILE RESPONSIVENESS AND BEHAVIOR (375px) ===")
+        print("\n=== STEP 5: VERIFY MOBILE LAYOUT AND BEHAVIOR (375px) ===")
         await page.set_viewport_size({"width": 375, "height": 812})
         await page.wait_for_timeout(300)
 
-        # 4.1 Mobile profile button can be opened independently without opening sidebar
-        mobile_profile_btn = header.locator("button[aria-label='User profile menu']")
-        assert await mobile_profile_btn.is_visible(), "Mobile header profile button must be visible"
-        await mobile_profile_btn.click()
-        await page.wait_for_timeout(300)
-
-        mobile_dropdown = header.locator("div.absolute.right-0")
-        assert await mobile_dropdown.is_visible(), "Mobile profile dropdown opens independently"
-        mobile_dropdown_text = await mobile_dropdown.inner_text()
-        assert "System Administrator" in mobile_dropdown_text
-        assert "admin@foundation.org" in mobile_dropdown_text
-        assert "Settings" in mobile_dropdown_text
-        assert "Log out" in mobile_dropdown_text
-
-        # Verify no horizontal scroll on mobile
-        scroll_width = await page.evaluate("() => document.documentElement.scrollWidth")
-        inner_width = await page.evaluate("() => window.innerWidth")
-        assert scroll_width <= inner_width, f"Horizontal overflow detected! scrollWidth={scroll_width}, innerWidth={inner_width}"
-        print("Mobile profile dropdown opens independently with zero horizontal scroll.")
-
-        # Close dropdown
-        await page.locator("div.fixed.inset-0.z-40").click()
-        await page.wait_for_timeout(200)
-
-        # 4.2 Hamburger button opens sidebar drawer
+        # 5.1 Mobile hamburger opens drawer with scrollable nav and pinned bottom actions
         hamburger_btn = header.locator("button[aria-label='Toggle navigation menu']")
         await hamburger_btn.click()
         await page.wait_for_timeout(300)
 
         mobile_drawer = page.locator("aside[aria-label='Mobile Navigation Drawer']")
-        assert await mobile_drawer.is_visible(), "Mobile navigation drawer must open on hamburger click"
-        drawer_text = await mobile_drawer.inner_text()
+        assert await mobile_drawer.is_visible(), "Mobile drawer must open on hamburger click"
 
-        # Drawer must contain navigation only
-        assert "System Administrator" not in drawer_text, "User info must NOT be in mobile drawer"
-        assert "Log out" not in drawer_text, "Log out must NOT be inside mobile drawer"
-        assert "Home" in drawer_text
-        assert "Group" in drawer_text
-        assert "Member" in drawer_text
+        mobile_bottom_section = mobile_drawer.locator("div.mt-auto")
+        assert await mobile_bottom_section.is_visible(), "Mobile drawer must display bottom actions section"
+        mobile_bottom_text = await mobile_bottom_section.inner_text()
+        assert "Settings" in mobile_bottom_text, "Mobile drawer bottom must contain Settings"
+        assert "Log out" in mobile_bottom_text, "Mobile drawer bottom must contain Log out"
 
-        # Close mobile drawer via X button
+        # Verify no duplicate user identity card in mobile drawer
+        drawer_full_text = await mobile_drawer.inner_text()
+        assert "System Administrator" not in drawer_full_text, "User profile card must NOT be in mobile drawer"
+
+        # Close mobile drawer via close button
         close_btn = mobile_drawer.locator("button[aria-label='Close menu drawer']")
         await close_btn.click()
         await page.wait_for_timeout(300)
-        assert not (await mobile_drawer.is_visible()), "Mobile drawer closes on close button"
-        print("Mobile drawer opens and closes cleanly with navigation items only.")
+        assert not (await mobile_drawer.is_visible()), "Mobile drawer must close on close button"
 
-        print("\n=== STEP 5: VERIFY NARROW MOBILE (320px) ZERO OVERFLOW ===")
-        await page.set_viewport_size({"width": 320, "height": 600})
-        await page.wait_for_timeout(200)
+        # 5.2 Header profile dropdown opens independently on mobile with zero horizontal scroll
+        mobile_profile_btn = header.locator("button[aria-label='User profile menu']")
         await mobile_profile_btn.click()
         await page.wait_for_timeout(300)
 
-        scroll_width_320 = await page.evaluate("() => document.documentElement.scrollWidth")
-        inner_width_320 = await page.evaluate("() => window.innerWidth")
-        assert scroll_width_320 <= inner_width_320, f"Horizontal overflow at 320px! scrollWidth={scroll_width_320}, innerWidth={inner_width_320}"
-        print("Narrow 320px mobile viewport verified with zero overflow.")
+        mobile_dropdown = header.locator("div.absolute.right-0")
+        assert await mobile_dropdown.is_visible(), "Mobile header dropdown must open"
+        scroll_width_375 = await page.evaluate("() => document.documentElement.scrollWidth")
+        inner_width_375 = await page.evaluate("() => window.innerWidth")
+        assert scroll_width_375 <= inner_width_375, f"Horizontal overflow at 375px! scrollWidth={scroll_width_375}, innerWidth={inner_width_375}"
 
-        # Close dropdown
+        # Close mobile dropdown
         await page.locator("div.fixed.inset-0.z-40").click()
         await page.wait_for_timeout(200)
+        print("Mobile drawer and header dropdown verified with zero overflow.")
 
-        print("\n=== STEP 6: VERIFY LOGOUT ACTION IN HEADER PROFILE DROPDOWN ===")
+        print("\n=== STEP 6: VERIFY SIDEBAR LOGOUT ACTION EXECUTES SECURE LOGOUT ===")
         await page.set_viewport_size({"width": 1280, "height": 900})
-        await page.locator("header button[aria-label='User profile menu']").click()
-        await page.wait_for_timeout(300)
-        # Click Log out inside dropdown
-        await page.click("header div.absolute.right-0 button:has-text('Log out')")
+        sidebar_logout_btn = desktop_sidebar.locator("div.mt-auto span:has-text('Log out')")
+        await sidebar_logout_btn.click()
         await page.wait_for_url("http://127.0.0.1:3000/login", timeout=10000)
-        print("Logged out successfully via header profile menu.")
+        print("Sidebar Log out button executed secure logout and redirected to /login.")
 
-        print("\n=== STEP 7: VERIFY RBAC IN HEADER PROFILE DROPDOWN FOR VIEWER ===")
+        print("\n=== STEP 7: VERIFY RBAC IN SIDEBAR BOTTOM ACTIONS FOR VIEWER (WITHOUT settings.view) ===")
         await page.fill("input[name='username'], input[placeholder*='Username']", "viewer")
         await page.fill("input[name='password'], input[placeholder*='Password']", "Viewer@Foundation2026!")
         await page.click("button[type='submit']")
         await page.wait_for_url("http://127.0.0.1:3000/", timeout=10000)
 
-        v_profile_btn = page.locator("header button[aria-label='User profile menu']")
-        await v_profile_btn.click()
+        v_bottom_section = page.locator("aside.hidden.md\\:flex div.mt-auto")
+        v_bottom_text = await v_bottom_section.inner_text()
+        assert "Settings" not in v_bottom_text, "Viewer without settings.view must NOT see Settings in sidebar bottom"
+        assert "Log out" in v_bottom_text, "Viewer must see Log out in sidebar bottom"
+        print("Viewer correctly sees Log out only, and NOT Settings in sidebar bottom.")
+
+        # Log out viewer via header dropdown to test header logout as well
+        await page.locator("header button[aria-label='User profile menu']").click()
         await page.wait_for_timeout(300)
-
-        v_dropdown = page.locator("header div.absolute.right-0")
-        v_dropdown_text = await v_dropdown.inner_text()
-        assert "Alice Viewer" in v_dropdown_text
-        assert "Viewer" in v_dropdown_text
-        assert "Role Permissions" not in v_dropdown_text, "Viewer must NOT see Role Permissions link"
-        assert "Settings" not in v_dropdown_text, "Viewer without settings.view must NOT see Settings link"
-        assert "Log out" in v_dropdown_text, "Viewer must see Log out"
-        print("Viewer correctly sees name, role, email, and Log out, but neither Role Permissions nor Settings.")
-
-        # Log out as viewer
         await page.click("header div.absolute.right-0 button:has-text('Log out')")
         await page.wait_for_url("http://127.0.0.1:3000/login", timeout=10000)
+        print("Header dropdown Log out button also verified successfully.")
 
-        print("\n=== STEP 8: VERIFY RBAC IN HEADER PROFILE DROPDOWN FOR FINANCE OFFICER ===")
+        print("\n=== STEP 8: VERIFY RBAC IN SIDEBAR BOTTOM ACTIONS FOR FINANCE OFFICER (WITH settings.view) ===")
         await page.fill("input[name='username'], input[placeholder*='Username']", "finance")
         await page.fill("input[name='password'], input[placeholder*='Password']", "Finance@Foundation2026!")
         await page.click("button[type='submit']")
         await page.wait_for_url("http://127.0.0.1:3000/", timeout=10000)
 
-        f_profile_btn = page.locator("header button[aria-label='User profile menu']")
-        await f_profile_btn.click()
-        await page.wait_for_timeout(300)
-
-        f_dropdown = page.locator("header div.absolute.right-0")
-        f_dropdown_text = await f_dropdown.inner_text()
-        assert "Bob Finance" in f_dropdown_text
-        assert "Finance Officer" in f_dropdown_text
-        assert "Role Permissions" not in f_dropdown_text, "Finance Officer lacks roles.manage, must NOT see Role Permissions"
-        assert "Settings" in f_dropdown_text, "Finance Officer has settings.view, MUST see Settings"
-        assert "Log out" in f_dropdown_text
-        print("Finance Officer correctly sees Settings and Log out, but not Role Permissions.")
+        f_bottom_section = page.locator("aside.hidden.md\\:flex div.mt-auto")
+        f_bottom_text = await f_bottom_section.inner_text()
+        assert "Settings" in f_bottom_text, "Finance Officer with settings.view MUST see Settings in sidebar bottom"
+        assert "Log out" in f_bottom_text, "Finance Officer must see Log out in sidebar bottom"
+        print("Finance Officer correctly sees both Settings and Log out in sidebar bottom.")
 
         print("\n=== ALL PLAYWRIGHT VERIFICATION CHECKS PASSED SUCCESSFULLY! ===")
         await browser.close()

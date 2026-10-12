@@ -16,6 +16,8 @@ import {
   ReceiptText,
   BarChart3,
   ShieldCheck, 
+  Settings,
+  LogOut,
   Hash,
   Wallet,
   ClipboardList,
@@ -144,6 +146,13 @@ export const foundationNavGroups: NavGroupData[] = [
     ]
   }
 ];
+
+export const bottomNavItems: NavItemData[] = [
+  { id: 'settings', title: 'Settings', icon: Settings, href: '/settings', permission: 'settings.view', shortcut: '⌘,' },
+  { id: 'logout', title: 'Log out', icon: LogOut },
+];
+
+export const mockBottomItems = bottomNavItems;
 
 function NavItem({ 
   item, 
@@ -335,8 +344,20 @@ export function SidebarNav({
     items: group.items.map(filterItem).filter((i): i is NavItemData => i !== null)
   })).filter(group => group.items.length > 0);
 
+  const filteredBottomItems = bottomNavItems
+    .filter(() => {
+      // Only show bottom actions when authenticated
+      if (!authContext || !authContext.user || authContext.loading) {
+        return false;
+      }
+      return true;
+    })
+    .map(filterItem)
+    .filter((i): i is NavItemData => i !== null);
+
   return (
     <div className={`flex flex-col w-full h-full bg-card/50 border-r border-border/50 p-3 font-sans max-w-full min-w-0 ${className}`}>
+      {/* Scrollable navigation area */}
       <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col gap-4">
         {filteredGroups.map((group, idx) => (
           <div key={idx} className="flex flex-col gap-0.5">
@@ -356,11 +377,25 @@ export function SidebarNav({
           </div>
         ))}
       </div>
+
+      {/* Non-shrinking bottom action section */}
+      {filteredBottomItems.length > 0 && (
+        <div className="mt-auto pt-3 border-t border-border/50 flex flex-col gap-0.5 shrink-0">
+          {filteredBottomItems.map(item => (
+            <NavItem 
+              key={item.id} 
+              item={item} 
+              activeId={currentId} 
+              onSelect={handleSelect} 
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-const allItems = foundationNavGroups.flatMap(g => g.items);
+const allItems = [...foundationNavGroups.flatMap(g => g.items), ...bottomNavItems];
 const flattenItems = (items: NavItemData[]): NavItemData[] => {
   return items.reduce((acc, item) => {
     acc.push(item);
